@@ -1,0 +1,63 @@
+{
+  "name": "@rypi/discord-bot",
+  "version": "0.0.0",
+  "description": "🤖 Discord bot for guiding developers around the globe to build their own Habbo retro",
+  "main": "dist/app.js",
+  "scripts": {
+    "dev": "ts-node-dev src/app.ts",
+    "start": "ts-node src/app.ts",
+    "start:prod": "node dist/app.js",
+    "build": "tsc",
+    "lint:typescript": "eslint \"**/*.ts\" --ignore-path \".gitignore\" && tsc --noemit",
+    "lint:prettier": "prettier \".\" --check --ignore-unknown '!**/*.yml' --ignore-path \".gitignore\""
+  },
+  "dependencies": {
+    "@discordjs/voice": "^0.17.0",
+    "@distube/ytdl-core": "latest",
+    "discord.js": "^14.12.1",
+    "dotenv": "^16.3.1",
+    "ffmpeg-static": "^4.4.1",
+    "js-yaml": "^4.1.0",
+    "play-dl": "^1.9.7",
+    "soundcloud-downloader": "^0.2.3",
+    "youtube-sr": "^4.3.0",
+    "zod": "^3.21.4"
+  },
+  "optionalDependencies": {
+    "@discordjs/opus": "^0.9.0",
+    "libsodium-wrappers": "^0.7.13",
+    "opusscript": "^0.1.1",
+    "sodium-native": "^3.4.1",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.5",
+    "@types/node": "20.4.6",
+    "@walidoux/eslint-config": "1.0.7",
+    "@walidoux/prettier-config": "1.0.3",
+    "ansi-colors": "^4.1.3",
+    "eslint": "8.46.0",
+    "prettier": "3.0.1",
+    "ts-node": "10.9.1",
+    "ts-node-dev": "2.0.0",
+    "tslib": "^2.6.1",
+    "typescript": "5.1.6"
+  },
+  "prettier": "@walidoux/prettier-config",
+  "eslintConfig": {
+    "extends": [
+      "@walidoux/eslint-config"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": 2023,
+      "project": [
+        "./tsconfig.json"
+      ]
+    },
+    "rules": {
+      "@typescript-eslint/consistent-type-imports": "off"
+    }
+  }
+}
