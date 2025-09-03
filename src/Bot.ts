@@ -1,4 +1,4 @@
-import type { Client, ClientUser, Guild, Snowflake, TextChannel, VoiceBasedChannel } from 'discord.js'
+import type { Client, ClientUser, Guild, GuildMember, Snowflake, TextChannel, VoiceBasedChannel } from 'discord.js'
 import {
   ActivityType,
   ChannelType,
@@ -9,9 +9,10 @@ import {
   REST,
   Routes
 } from 'discord.js'
+import { createCanvas, loadImage } from '@napi-rs/canvas'
 
 import type { Command } from './types'
-import { Config, Logger, MusicQueue } from './tools'
+import { Config, Logger, MissingPermissionsExceptionError, MusicQueue, checkPermissions } from './tools'
 import commands from './commands'
 
 export class RypiBot {
@@ -38,18 +39,58 @@ export class RypiBot {
 
     this.client.on(Events.GuildMemberAdd, async (member): Promise<void> => {
       try {
+        console.log('trying to update member count')
         await this.updateMemberCount(member.guild)
       } catch (error) {
         Logger.error('Error updating member count:', error)
       }
+
+      const channel = member.guild.channels.cache.get(Config.WELCOME_CHANNEL_ID) as TextChannel
+      if (channel == null) return
+
+      const attachment = await this.createCanvasImage(member)
+
+      const embed = new EmbedBuilder()
+        .setColor('#00ff00')
+        .setTitle(`Bienvenue ${member.guild.name} 🎉 !`)
+        .setDescription(`Hey ${member.user.tag}, nous sommes ravis de vous accueillir parmi nous !`) // TODO: welcome back
+        .setImage(`attachment://welcome.png`)
+
+      await channel.send({
+        embeds: [embed],
+        files: [{ attachment, name: 'welcome.png' }]
+      })
     })
 
-    // Member leave event
     this.client.on(Events.GuildMemberRemove, async (member): Promise<void> => {
       try {
         await this.updateMemberCount(member.guild)
       } catch (error) {
         Logger.error('Error updating member count:', error)
+      }
+
+      const channel = member.guild.channels.cache.get(Config.WELCOME_CHANNEL_ID) as TextChannel
+
+      if (channel != null) {
+        const attachment = await this.createCanvasImage(member as GuildMember)
+
+        const embed = new EmbedBuilder()
+          .setColor('#ff0000')
+          .setTitle(`${member.user.username} has left ${member.guild.name}`)
+          .setDescription(`Sad to see you go, ${member.user.tag}!`)
+          .setImage(`attachment://welcome.png`)
+          .setFooter({
+            text: `Avait rejoint le serveur il y a <t:${
+              member.joinedAt != null ? Math.floor(member.joinedAt.getTime() / 1000) : Math.floor(Date.now() / 1000)
+            }:R>`
+          })
+
+        await channel.send({
+          embeds: [embed],
+          files: [{ attachment, name: 'welcome.png' }]
+        })
+      } else {
+        Logger.error('No channel was found using welcome channel ID')
       }
     })
 
@@ -150,7 +191,30 @@ export class RypiBot {
     }
   }
 
-  // Method to update member count for all guilds the bot is in
+  private async createCanvasImage(member: GuildMember): Promise<Buffer> {
+    const canvas = createCanvas(700, 250)
+    const context = canvas.getContext('2d')
+
+    context.fillStyle = '#2f3136'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+
+    const avatarUrl = member.user.displayAvatarURL({ extension: 'png', size: 128 })
+    const avatar = await loadImage(avatarUrl)
+
+    context.beginPath()
+    context.arc(125, 125, 100, 0, Math.PI * 2, true)
+    context.closePath()
+    context.clip()
+    context.drawImage(avatar, 25, 25, 200, 200)
+
+    context.font = '40px sans-serif'
+    context.fillStyle = '#ffffff'
+    context.fillText(`Welcome, ${member.user.username}!`, 250, 100)
+    context.fillText(`Member #${member.guild.memberCount}`, 250, 150)
+
+    return await canvas.encode('png')
+  }
+
   private async updateAllGuildsMemberCount(): Promise<void> {
     for (const guild of this.client.guilds.cache.values()) {
       try {

@@ -22,6 +22,7 @@ const ConfigSchema = z.strictObject({
 
   ADMIN_ANNOUNCE_CHANNEL_ID: z.string(),
   LISTEN_ROLE_IDS: z.array(z.string()),
+  WELCOME_CHANNEL_ID: z.string(),
 
   MEMBER_COUNTER_PATTERN: z.string()
 })
