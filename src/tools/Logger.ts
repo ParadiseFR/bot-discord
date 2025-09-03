@@ -10,30 +10,30 @@ const PREFIX_ERROR = bgRed(`${Config.PREFIX} [ERROR] > `)
 
 const error = (...messages: Array<string | Error | unknown>): void => {
   return console.error(
-    `\n${PREFIX_ERROR} ${messages
+    `${PREFIX_ERROR} ${messages
       .map((m): string => (typeof m === 'string' ? m : m instanceof Error ? m.stack ?? m.message : String(m)))
-      .join(' ')}\n`
+      .join(' ')}`
   )
 }
 
 const warn = (...messages: Array<string | Error | unknown>): void => {
   return console.warn(
-    `\n${PREFIX_WARN} ${messages
+    `${PREFIX_WARN} ${messages
       .map((m): string => (typeof m === 'string' ? m : m instanceof Error ? m.stack ?? m.message : String(m)))
-      .join(' ')}\n`
+      .join(' ')}`
   )
 }
 
 const debug = (...messages: Array<string | Error | unknown>): void => {
   return console.log(
-    `\n${PREFIX_DEBUG} ${messages
+    `${PREFIX_DEBUG} ${messages
       .map((m): string => (typeof m === 'string' ? m : m instanceof Error ? m.stack ?? m.message : String(m)))
-      .join(' ')}\n`
+      .join(' ')}`
   )
 }
 
 const init = (user: ClientUser): void => {
-  return console.log(`\n${PREFIX_INIT} ${user.tag} is connected!\n`)
+  return console.log(`${PREFIX_INIT} ${user.tag} is connected!`)
 }
 
 export const Logger = { error, debug, warn, init }

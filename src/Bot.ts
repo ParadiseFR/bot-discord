@@ -1,3 +1,5 @@
+import { join } from 'node:path'
+
 import type { Client, ClientUser, Guild, GuildMember, Snowflake, TextChannel, VoiceBasedChannel } from 'discord.js'
 import {
   ActivityType,
@@ -10,6 +12,8 @@ import {
   Routes
 } from 'discord.js'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
+import { formatDistanceToNow } from 'date-fns'
+import { fr } from 'date-fns/locale'
 
 import type { Command } from './types'
 import { Config, Logger, MissingPermissionsExceptionError, MusicQueue, checkPermissions } from './tools'
@@ -39,7 +43,6 @@ export class RypiBot {
 
     this.client.on(Events.GuildMemberAdd, async (member): Promise<void> => {
       try {
-        console.log('trying to update member count')
         await this.updateMemberCount(member.guild)
       } catch (error) {
         Logger.error('Error updating member count:', error)
@@ -48,7 +51,7 @@ export class RypiBot {
       const channel = member.guild.channels.cache.get(Config.WELCOME_CHANNEL_ID) as TextChannel
       if (channel == null) return
 
-      const attachment = await this.createCanvasImage(member)
+      const attachment = await this.createCanvasImage(member, 'welcome')
 
       const embed = new EmbedBuilder()
         .setColor('#00ff00')
@@ -63,27 +66,39 @@ export class RypiBot {
     })
 
     this.client.on(Events.GuildMemberRemove, async (member): Promise<void> => {
+      Logger.debug(`GuildMemberRemove event triggered for ${member.user.tag} in ${member.guild.name}`)
+
       try {
         await this.updateMemberCount(member.guild)
       } catch (error) {
         Logger.error('Error updating member count:', error)
       }
 
+      let fullMember = member as GuildMember
+
+      if (member.partial) {
+        Logger.warn(`Member ${member.user.tag} is partial, not catched yet, fetching full data...`)
+        try {
+          fullMember = await member.fetch()
+          Logger.debug(`Fetched member data: joinedAt = ${fullMember.joinedAt?.toISOString()}`)
+        } catch (error) {
+          Logger.error(`Failed to fetch full member data for ${member.user.tag}:`, error)
+        }
+      }
+
       const channel = member.guild.channels.cache.get(Config.WELCOME_CHANNEL_ID) as TextChannel
 
       if (channel != null) {
-        const attachment = await this.createCanvasImage(member as GuildMember)
+        const attachment = await this.createCanvasImage(fullMember, 'goodbye')
+        const joinedSince = formatDistanceToNow(fullMember.joinedAt as Date, { locale: fr, addSuffix: true })
 
         const embed = new EmbedBuilder()
           .setColor('#ff0000')
-          .setTitle(`${member.user.username} has left ${member.guild.name}`)
-          .setDescription(`Sad to see you go, ${member.user.tag}!`)
+          .setTitle(`${fullMember.user.username} has left ${fullMember.guild.name}`)
+          .setDescription(`Sad to see you go, ${fullMember.user.tag}!`)
           .setImage(`attachment://welcome.png`)
-          .setFooter({
-            text: `Avait rejoint le serveur il y a <t:${
-              member.joinedAt != null ? Math.floor(member.joinedAt.getTime() / 1000) : Math.floor(Date.now() / 1000)
-            }:R>`
-          })
+          .setFooter({ text: `Avait rejoint le serveur ${joinedSince}` })
+          .setTimestamp()
 
         await channel.send({
           embeds: [embed],
@@ -184,33 +199,60 @@ export class RypiBot {
 
       if (voiceChannel.name !== newChannelName) {
         await voiceChannel.setName(newChannelName)
-        Logger.debug(`Updated voice channel name to: ${newChannelName}`)
+        Logger.debug(`Updated members count channel name to: ${newChannelName}`)
       }
     } catch (error) {
       Logger.error('Error updating member count:', error)
     }
   }
 
-  private async createCanvasImage(member: GuildMember): Promise<Buffer> {
+  private async createCanvasImage(member: GuildMember, type: 'welcome' | 'goodbye'): Promise<Buffer> {
     const canvas = createCanvas(700, 250)
     const context = canvas.getContext('2d')
 
-    context.fillStyle = '#2f3136'
-    context.fillRect(0, 0, canvas.width, canvas.height)
+    const backgroundPath = join(__dirname, '../assets/JOINLEAVE.png')
 
-    const avatarUrl = member.user.displayAvatarURL({ extension: 'png', size: 128 })
-    const avatar = await loadImage(avatarUrl)
+    try {
+      const background = await loadImage(backgroundPath)
+      context.drawImage(background, 0, 0, canvas.width, canvas.height)
+    } catch (error) {
+      Logger.error(`Failed to load background image: ${backgroundPath}`, error)
+      context.fillStyle = '#2f3136'
+      context.fillRect(0, 0, canvas.width, canvas.height)
+    }
+
+    context.save()
+
+    context.shadowColor = '#000000'
+    context.shadowBlur = 10
+    context.shadowOffsetX = 5
+    context.shadowOffsetY = 5
 
     context.beginPath()
     context.arc(125, 125, 100, 0, Math.PI * 2, true)
     context.closePath()
     context.clip()
+
+    context.lineWidth = 2
+    context.strokeStyle = '#ffffff'
+    context.stroke()
+
+    const avatarUrl = member.user.displayAvatarURL({ extension: 'png', size: 128 })
+    const avatar = await loadImage(avatarUrl)
     context.drawImage(avatar, 25, 25, 200, 200)
 
+    context.restore()
+
+    // Add text based on type
     context.font = '40px sans-serif'
     context.fillStyle = '#ffffff'
-    context.fillText(`Welcome, ${member.user.username}!`, 250, 100)
-    context.fillText(`Member #${member.guild.memberCount}`, 250, 150)
+    if (type === 'welcome') {
+      context.fillText(`Welcome, ${member.user.username}!`, 250, 100)
+      context.fillText(`Member #${member.guild.memberCount}`, 250, 150)
+    } else {
+      context.fillText(`Goodbye, ${member.user.username}!`, 250, 100)
+      context.fillText(`We now have ${member.guild.memberCount} members.`, 250, 150)
+    }
 
     return await canvas.encode('png')
   }
