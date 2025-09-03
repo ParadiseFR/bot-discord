@@ -24,7 +24,8 @@ const ConfigSchema = z.strictObject({
   LISTEN_ROLE_IDS: z.array(z.string()),
   WELCOME_CHANNEL_ID: z.string(),
 
-  MEMBER_COUNTER_PATTERN: z.string()
+  MEMBER_COUNTER_PATTERN: z.string(),
+  LOG_CHANNEL_ID: z.string()
 })
 
 const configPath = load(readFileSync(`${ROOT_DIR()}/config.yml`, 'utf8'))

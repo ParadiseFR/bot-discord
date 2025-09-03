@@ -7,7 +7,7 @@ import type {
   PermissionFlagsBits
 } from 'discord.js'
 
-type CommandMeta =
+export type CommandMeta =
   | SlashCommandBuilder
   | Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>
   | SlashCommandSubcommandsOnlyBuilder
