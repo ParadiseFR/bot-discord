@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits } from 'discord.js'
+import { Client, GatewayIntentBits, Partials } from 'discord.js'
 
 import { RypiBot } from './Bot'
 
@@ -12,6 +12,7 @@ export const BOT_INSTANCE = new RypiBot(
       GatewayIntentBits.MessageContent,
       GatewayIntentBits.GuildMembers,
       GatewayIntentBits.DirectMessages
-    ]
+    ],
+    partials: [Partials.GuildMember]
   })
 )

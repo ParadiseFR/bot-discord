@@ -256,25 +256,25 @@ export class RypiBot {
       timestamps?.set(interaction.user.id, now)
       setTimeout(() => timestamps?.delete(interaction.user.id), cooldownAmount)
 
-      command.execute({ interaction })
-
-      /* try {
-        const permissionsCheck: PermissionResult = await checkPermissions(command, interaction)
+      try {
+        const permissionsCheck = await checkPermissions(command, interaction)
 
         if (permissionsCheck.result) {
-          command.execute(interaction as ChatInputCommandInteraction)
+          command.execute({ interaction })
         } else {
-          throw new MissingPermissionsException(permissionsCheck.missing)
+          throw new MissingPermissionsExceptionError(permissionsCheck.missing)
         }
       } catch (error: any) {
         Logger.error(error)
 
-        if (error.message.includes('permissions')) {
-          interaction.reply({ content: error.toString(), ephemeral: true }).catch(Logger.error)
+        if (Boolean(error.message.includes('permissions'))) {
+          interaction.reply({ content: error.toString(), ephemeral: true }).catch(console.error)
         } else {
-          interaction.reply({ content: i18n.__('common.errorCommand'), ephemeral: true }).catch(Logger.error)
+          interaction
+            .reply({ content: "Une erreur s'est produite lors de l'exécution de cette commande.", ephemeral: true })
+            .catch(Logger.error)
         }
-      } */
+      }
     })
   }
 }
