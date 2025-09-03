@@ -8,16 +8,28 @@ const PREFIX_WARN = yellow.bold(`${Config.PREFIX} [WARN] > `)
 const PREFIX_DEBUG = dim(`${Config.PREFIX} [DEBUG] > `)
 const PREFIX_ERROR = bgRed(`${Config.PREFIX} [ERROR] > `)
 
-const error = (message: string | Error | unknown): void => {
-  return console.error(`\n${PREFIX_ERROR} ${String(message)}\n`)
+const error = (...messages: Array<string | Error | unknown>): void => {
+  return console.error(
+    `\n${PREFIX_ERROR} ${messages
+      .map((m): string => (typeof m === 'string' ? m : m instanceof Error ? m.stack ?? m.message : String(m)))
+      .join(' ')}\n`
+  )
 }
 
-const warn = (message: string): void => {
-  return console.warn(`\n${PREFIX_WARN} ${message}\n`)
+const warn = (...messages: Array<string | Error | unknown>): void => {
+  return console.warn(
+    `\n${PREFIX_WARN} ${messages
+      .map((m): string => (typeof m === 'string' ? m : m instanceof Error ? m.stack ?? m.message : String(m)))
+      .join(' ')}\n`
+  )
 }
 
-const debug = (message: string): void => {
-  return console.log(`\n${PREFIX_DEBUG} ${message}\n`)
+const debug = (...messages: Array<string | Error | unknown>): void => {
+  return console.log(
+    `\n${PREFIX_DEBUG} ${messages
+      .map((m): string => (typeof m === 'string' ? m : m instanceof Error ? m.stack ?? m.message : String(m)))
+      .join(' ')}\n`
+  )
 }
 
 const init = (user: ClientUser): void => {
