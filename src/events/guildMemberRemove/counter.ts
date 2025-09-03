@@ -4,7 +4,7 @@ import { Logger, event } from '../../tools'
 import { BOT_INSTANCE } from '../../app'
 
 export default event(Events.GuildMemberAdd, async (_, member) => {
-  Logger.debug(`Member leaving: ${member.user.tag}`)
+  Logger.log(`Member leaving: ${member.user.tag}`)
 
   try {
     await BOT_INSTANCE.updateMemberCount(member.guild)

@@ -1,10 +1,9 @@
+import 'dotenv/config'
+
 import { readFileSync } from 'node:fs'
 
 import { z } from 'zod'
 import { load } from 'js-yaml'
-import { config } from 'dotenv'
-
-config()
 
 export const ROOT_DIR = (path?: string): string => {
   return process.cwd().concat(path != null ? path : '')

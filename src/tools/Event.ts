@@ -12,10 +12,12 @@ export const registerEvents = (client: Client<true>, events: Array<Event<any>>):
     client.on(event.id, async (...args) => {
       const props = { client }
       try {
-        Logger.debug(`Event ${event.id} triggered`)
+        Logger.log(`Event ${event.id} triggered`)
         await event.exec(props, ...args)
       } catch (error) {
         Logger.error('Uncaught error:', error)
       }
     })
+
+  Logger.events('Events registered')
 }

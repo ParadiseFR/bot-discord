@@ -6,7 +6,7 @@ import { Canvas, Config, Logger, event } from '../../tools'
 import { BOT_INSTANCE } from '../../app'
 
 export default event(Events.GuildMemberAdd, async (_, member) => {
-  // Logger.debug(`New member: ${member.user.tag}`)
+  Logger.log(`New member: ${member.user.tag}`)
 
   let fullMember = member
 
@@ -14,7 +14,7 @@ export default event(Events.GuildMemberAdd, async (_, member) => {
     Logger.warn(`Member ${member.user.tag} is partial, not catched yet, fetching full data...`)
     try {
       fullMember = await member.fetch()
-      Logger.debug(`Fetched member data: joinedAt = ${fullMember.joinedAt?.toISOString()}`)
+      Logger.log(`Fetched member data: joinedAt = ${fullMember.joinedAt?.toISOString()}`)
     } catch (error) {
       Logger.error(`Failed to fetch full member data for ${member.user.tag}:`, error)
     }

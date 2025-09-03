@@ -25,10 +25,13 @@ export class RypiBot {
   public constructor(public readonly client: Client<true>) {
     GlobalFonts.registerFromPath(join(__dirname, '../assets/Alro.ttf'))
 
-    this.client.login(process.env.TOKEN).catch((error): void => Logger.error(error))
+    this.client
+      .login(process.env.TOKEN)
+      .then((): void => Logger.log('Connection Established'))
+      .catch((error): void => Logger.error(error))
 
     this.client.on(Events.Warn, (warning): void => Logger.warn(warning))
-    this.client.on(Events.Error, (error): void => Logger.error(error))
+    this.client.on(Events.Error, (error): void => Logger.error(error as any))
 
     registerEvents(client, events)
   }
@@ -78,7 +81,7 @@ export class RypiBot {
 
       if (voiceChannel.name !== newChannelName) {
         await voiceChannel.setName(newChannelName)
-        Logger.debug(`Updated members count channel name to: ${newChannelName}`)
+        Logger.log(`Updated members count channel name to: ${newChannelName}`)
       }
     } catch (error) {
       Logger.error('Error updating member count:', error)

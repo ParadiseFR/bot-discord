@@ -5,7 +5,8 @@ import commands from '../commands'
 import { BOT_INSTANCE } from '../app'
 
 export default event(Events.ClientReady, async ({ client }): Promise<void> => {
-  Logger.init(client.user)
+  const servers = client.guilds.cache.map((g): string => g.name).join(', ')
+  Logger.custom('init', `${client.user.tag} is connected on ${client.guilds.cache.size} servers! (${servers})`)
 
   client.user?.setActivity({ name: 'Rypî', type: ActivityType.Watching })
 
