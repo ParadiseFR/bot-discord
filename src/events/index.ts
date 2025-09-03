@@ -6,6 +6,9 @@ import guildMemberAdd from './guildMemberAdd'
 import channelDelete from './channelDelete'
 import channelCreate from './channelCreate'
 import voiceStateUpdate from './voiceStateUpdate'
+import messageCreate from './messageCreate'
+import messageDelete from './messageDelete'
+import messageUpdate from './messageUpdate'
 import ready from './ready'
 
 const events: Array<Event<any>> = [
@@ -16,7 +19,10 @@ const events: Array<Event<any>> = [
   ...guildMemberAdd,
   ...channelCreate,
   ...channelDelete,
-  ...voiceStateUpdate
+  ...voiceStateUpdate,
+  ...messageCreate,
+  ...messageDelete,
+  ...messageUpdate
 ]
 
 export default events
