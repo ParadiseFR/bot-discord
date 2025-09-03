@@ -21,7 +21,9 @@ const ConfigSchema = z.strictObject({
   DEFAULT_VOLUME: z.number(),
 
   ADMIN_ANNOUNCE_CHANNEL_ID: z.string(),
-  LISTEN_ROLE_IDS: z.array(z.string())
+  LISTEN_ROLE_IDS: z.array(z.string()),
+
+  MEMBER_COUNTER_PATTERN: z.string()
 })
 
 const configPath = load(readFileSync(`${ROOT_DIR()}/config.yml`, 'utf8'))
