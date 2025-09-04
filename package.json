@@ -4,7 +4,7 @@
   "description": "🤖 Discord bot for guiding developers around the globe to build their own Habbo retro",
   "main": "dist/app.js",
   "scripts": {
-    "dev": "NODE_ENV=development ts-node-dev src/app.ts",
+    "dev": "NODE_ENV=development ts-node-dev --clear src/app.ts",
     "start": "NODE_ENV=production ts-node src/app.ts",
     "start:prod": "node dist/app.js",
     "build": "tsc",
