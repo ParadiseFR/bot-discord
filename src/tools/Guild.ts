@@ -8,6 +8,10 @@ import z, { ZodSchema } from 'zod'
 import { Logger } from './Logger'
 import { FixedSizeMap } from './FixedSizeMap'
 
+type RecursivePartial<T> = {
+  [P in keyof T]?: RecursivePartial<T[P]>
+}
+
 const CONFIG_DIR = `${homedir()}/.mybot`
 const CONFIG_PATH = join(CONFIG_DIR, 'guilds.json')
 
@@ -132,6 +136,37 @@ class GuildSettingsManager {
     } else {
       Logger.error(`Invalid config provided for guild ${guild.id}: ${JSON.stringify(result.error.issues, null, 2)}`)
     }
+  }
+
+  public update(guild: Guild, partialConfig: RecursivePartial<schemaType>): void {
+    const currentConfig = this.get(guild)
+    const updatedConfig = this.deepMerge(currentConfig, partialConfig)
+
+    const result = guildschema.safeParse(updatedConfig)
+    if (result.success) {
+      this._cache.add(guild.id, result.data)
+      this.save()
+    } else {
+      Logger.error(
+        `Invalid partial config update for guild ${guild.id}: ${JSON.stringify(result.error.issues, null, 2)}`
+      )
+    }
+  }
+
+  private deepMerge(target: any, source: any): any {
+    const output = { ...target }
+
+    for (const key in source) {
+      if (Object.hasOwn(source, key)) {
+        if (Boolean(source[key]) && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+          output[key] = this.deepMerge(target[key] ?? {}, source[key])
+        } else {
+          output[key] = source[key]
+        }
+      }
+    }
+
+    return output
   }
 
   private isValidConfig<T>(data: unknown, schema: ZodSchema<T>): data is T {
