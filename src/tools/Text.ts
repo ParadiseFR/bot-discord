@@ -10,4 +10,11 @@ const code = (lang: string, multiline: boolean = false, ...messages: string[]): 
 const channel = (id: string): string => `<#${id}>`
 const mention = (id: string): string => `<@${id}>`
 
-export const Text = { bold, italic, underline, code, link, channel, mention }
+const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
+const toUpperSnakeCase = (str: string): string =>
+  str
+    .replace(/([\da-z])([A-Z])/g, '$1_$2')
+    .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2')
+    .toUpperCase()
+
+export const Text = { bold, italic, underline, code, link, channel, mention, capitalize, toUpperSnakeCase }
