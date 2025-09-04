@@ -2,6 +2,7 @@ import { ClientEvents, Awaitable, Client } from 'discord.js'
 
 export interface EventProps {
   client: Client<true>
+  disabled: boolean
 }
 
 export type EventKeys = keyof ClientEvents
