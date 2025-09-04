@@ -73,8 +73,7 @@ class GuildSettingsManager {
         }
 
         if (!this.isValidConfig(rawData, z.record(z.any(), z.any()))) {
-          Logger.warn('Guild config is not a valid object, skipping load.')
-          return
+          return Logger.warn('Guild config is not a valid object, skipping load.')
         }
 
         const data = rawData as Record<string, unknown>

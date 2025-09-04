@@ -2,14 +2,15 @@ import { EmbedBuilder, Events, TextChannel } from 'discord.js'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
-import { Canvas, Config, Logger, event } from '../../tools'
+import { Canvas, GuildSettings, Logger, event } from '../../tools'
 import { BOT_INSTANCE } from '../../app'
 
 export default event(Events.GuildMemberAdd, async (_, partialMember) => {
   const member = await BOT_INSTANCE.refinePartialMember(partialMember)
 
   if (!member.user.bot) {
-    const channel = member.guild.channels.cache.get(Config.WELCOME_CHANNEL_ID)
+    const { LOGS } = GuildSettings.get(member.guild)
+    const channel = member.guild.channels.cache.get(LOGS.WELCOME_CHANNEL_ID)
 
     if (channel != null && channel instanceof TextChannel) {
       const count = (await BOT_INSTANCE.membersCount(member.guild)).toString()

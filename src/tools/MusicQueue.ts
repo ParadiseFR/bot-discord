@@ -20,16 +20,17 @@ import {
   ButtonInteraction,
   ButtonStyle,
   CommandInteraction,
+  Guild,
   GuildMember,
   Interaction,
   Message,
   TextChannel
 } from 'discord.js'
 
-import { Config } from './Config'
 import { Song } from './Song'
 import { BOT_INSTANCE } from '../app'
 import { Logger } from './Logger'
+import { GuildSettings } from './Guild'
 
 export const safeReply = async (
   interaction: CommandInteraction | ButtonInteraction,
@@ -63,7 +64,7 @@ export class MusicQueue {
 
   public resource!: AudioResource
   public songs: Song[] = []
-  public volume = Config.DEFAULT_VOLUME ?? 100
+  public volume = GuildSettings.get(this.interaction.guild as Guild).MUSIC.DEFAULT_VOLUME
   public loop = false
   public muted = false
   public waitTimeout!: NodeJS.Timeout | null
@@ -166,7 +167,9 @@ export class MusicQueue {
     this.songs = []
     this.player.stop()
 
-    !Config.PRUNING && this.textChannel.send("❌ File d'attente de musique terminée.").catch(console.error)
+    const { MUSIC } = GuildSettings.get(this.interaction.guild as Guild)
+
+    !MUSIC.PRUNING && this.textChannel.send("❌ File d'attente de musique terminée.").catch(console.error)
 
     if (this.waitTimeout !== null) return
 
@@ -178,8 +181,8 @@ export class MusicQueue {
       }
       this.bot.queues.delete(this.interaction.guild?.id as string)
 
-      !Config.PRUNING && this.textChannel.send('Quitte le salon vocal...').catch(Logger.error)
-    }, Config.STAY_TIME * 1000)
+      !MUSIC.PRUNING && this.textChannel.send('Quitte le salon vocal...').catch(Logger.error)
+    }, MUSIC.STAY_TIME * 1000)
   }
 
   /**
@@ -364,8 +367,10 @@ export class MusicQueue {
       // Remove the buttons when the song ends
       playingMessage.edit({ components: [] }).catch(console.error)
 
+      const { MUSIC } = GuildSettings.get(this.interaction.guild as Guild)
+
       // Delete the message if pruning is enabled
-      if (Config.PRUNING) {
+      if (MUSIC.PRUNING) {
         setTimeout((): void => {
           playingMessage.delete().catch(Logger.error)
         }, 3000)

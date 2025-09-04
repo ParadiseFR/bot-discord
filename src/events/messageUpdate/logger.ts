@@ -1,11 +1,12 @@
 import { EmbedBuilder, Events, Guild, TextChannel } from 'discord.js'
 
-import { Config, Text, event } from '../../tools'
+import { GuildSettings, Text, event } from '../../tools'
 
 export default event(Events.MessageUpdate, async ({ client }, oldMessage, newMessage) => {
   if (!newMessage.author.bot) {
     if (oldMessage.content !== newMessage.content) {
-      const logChannel = client.channels.cache.get(Config.LOG_CHANNEL_ID)
+      const { LOGS } = GuildSettings.get(newMessage.guild as Guild)
+      const logChannel = client.channels.cache.get(LOGS.LOG_CHANNEL_ID)
 
       if (logChannel != null && logChannel instanceof TextChannel) {
         const embed = new EmbedBuilder()

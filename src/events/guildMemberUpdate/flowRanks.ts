@@ -1,6 +1,6 @@
 import { EmbedBuilder, Events, TextChannel } from 'discord.js'
 
-import { Config, Logger, Text, event } from '../../tools'
+import { Config, GuildSettings, Logger, Text, event } from '../../tools'
 
 export default event(Events.GuildMemberUpdate, async (_, oldMember, newMember) => {
   for (const roleId of Config.LISTEN_ROLE_IDS) {
@@ -9,7 +9,8 @@ export default event(Events.GuildMemberUpdate, async (_, oldMember, newMember) =
     const role = newMember.guild.roles.cache.get(roleId)
 
     if (role != null) {
-      const channel = newMember.guild.channels.cache.get(Config.ADMIN_ANNOUNCE_CHANNEL_ID)
+      const { LOGS } = GuildSettings.get(newMember.guild)
+      const channel = newMember.guild.channels.cache.get(LOGS.ADMIN_ANNOUNCE_CHANNEL_ID)
 
       if (channel != null && channel instanceof TextChannel) {
         const roleIcon =

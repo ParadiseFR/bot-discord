@@ -1,10 +1,11 @@
 import { EmbedBuilder, Events, TextChannel } from 'discord.js'
 
-import { Canvas, Config, Logger, event } from '../../tools'
+import { Canvas, GuildSettings, Logger, event } from '../../tools'
 
 export default event(Events.GuildMemberAdd, async (_, member) => {
   if (!member.user.bot) {
-    const channel = member.guild.channels.cache.get(Config.WELCOME_CHANNEL_ID)
+    const { LOGS } = GuildSettings.get(member.guild)
+    const channel = member.guild.channels.cache.get(LOGS.WELCOME_CHANNEL_ID)
 
     if (channel != null && channel instanceof TextChannel) {
       const previousJoins = member.guild.members.cache.get(member.id)?.joinedTimestamp
