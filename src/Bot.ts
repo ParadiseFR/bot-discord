@@ -8,9 +8,12 @@ import {
   ChannelType,
   Collection,
   Events,
-  PermissionFlagsBits
+  PermissionFlagsBits,
+  GuildMember,
+  PartialGuildMember
 } from 'discord.js'
 import { GlobalFonts } from '@napi-rs/canvas'
+import { google } from 'googleapis'
 
 import type { Command } from './types'
 import { Config, Logger, MusicQueue, registerEvents } from './tools'
@@ -22,8 +25,17 @@ export class RypiBot {
   public cooldowns = new Collection<string, Collection<Snowflake, number>>()
   public queues = new Collection<Snowflake, MusicQueue>()
 
+  public drive: ReturnType<typeof google.drive>
+
   public constructor(public readonly client: Client<true>) {
     GlobalFonts.registerFromPath(join(__dirname, '../assets/Alro.ttf'))
+
+    const auth = new google.auth.GoogleAuth({
+      keyFile: join(__dirname, './credentials.json'),
+      scopes: ['https://www.googleapis.com/auth/drive']
+    })
+
+    this.drive = google.drive({ version: 'v3', auth })
 
     this.client
       .login(process.env.TOKEN)
@@ -71,6 +83,20 @@ export class RypiBot {
   public async membersCount(guild: Guild): Promise<number> {
     const members = await guild.members.fetch()
     return members.filter((member): boolean => !member.user.bot).size
+  }
+
+  public async refinePartialMember(member: GuildMember | PartialGuildMember): Promise<GuildMember> {
+    if (member.partial) {
+      Logger.log(`Member ${member.user.tag} is partial, not catched yet, fetching full data...`)
+
+      try {
+        member = await member.fetch()
+      } catch (error) {
+        Logger.error(`Failed to fetch full member data for ${member.user.tag}:`, error)
+      }
+    }
+
+    return member as GuildMember
   }
 
   public async updateMemberCount(guild: Guild): Promise<void> {

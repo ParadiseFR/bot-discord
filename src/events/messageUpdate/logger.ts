@@ -12,7 +12,7 @@ export default event(Events.MessageUpdate, async ({ client }, oldMessage, newMes
           .setColor('#e17055')
           .setTitle("Modification d'un message")
           .setDescription(
-            `${Text.bold('Auteur :')} ${Text.mention(newMessage.author.id)}\n` +
+            `${Text.bold('Auteur :')} ${Text.mention.user(newMessage.author.id)}\n` +
               `${Text.bold('Ancien message :')} ${oldMessage.content}\n` +
               `${Text.bold('Nouveau message :')} ${newMessage.content}`
           )

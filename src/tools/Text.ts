@@ -8,7 +8,10 @@ const code = (lang: string, multiline: boolean = false, ...messages: string[]): 
 }
 
 const channel = (id: string): string => `<#${id}>`
-const mention = (id: string): string => `<@${id}>`
+const mention = {
+  user: (id: string): string => `<@${id}>`,
+  role: (id: string): string => `<@&${id}>`
+}
 
 const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 const toUpperSnakeCase = (str: string): string =>

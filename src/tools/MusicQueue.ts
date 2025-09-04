@@ -71,13 +71,6 @@ export class MusicQueue {
   private readyLock = false
   private stopped = false
 
-  /**
-   * Constructs a new MusicQueue instance, setting up the audio player,
-   * voice connection, and event listeners to manage voice state changes
-   * and audio playback. It also handles network state changes to ensure
-   * a stable connection for audio streaming.
-   * @param options
-   */
   public constructor(options: QueueOptions) {
     Object.assign(this, options)
 

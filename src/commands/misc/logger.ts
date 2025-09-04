@@ -1,6 +1,6 @@
 import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
 
-import { command, GuildConfig, Text } from '../../tools'
+import { command, GuildSettings, Text } from '../../tools'
 
 const meta = new SlashCommandBuilder()
   .setName('salon')
@@ -18,7 +18,7 @@ export default command({
     await interaction.deferReply({ ephemeral: true })
 
     const channel = interaction.options.getChannel('salon', true)
-    GuildConfig.setLogChannel(interaction.guildId as string, channel.id)
+    GuildSettings.setLogChannel(interaction.guildId as string, channel.id)
 
     await interaction.editReply(`✅ Salon de logs défini sur ${Text.channel(channel.id)} pour ce serveur.`)
   }

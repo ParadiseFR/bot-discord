@@ -4,8 +4,6 @@ import { Canvas, Config, Logger, event } from '../../tools'
 
 export default event(Events.GuildMemberAdd, async (_, member) => {
   if (!member.user.bot) {
-    Logger.events(`Un nouveau membre a rejoint le serveur: ${member.user.tag}`)
-
     const channel = member.guild.channels.cache.get(Config.WELCOME_CHANNEL_ID)
 
     if (channel != null && channel instanceof TextChannel) {
@@ -25,10 +23,16 @@ export default event(Events.GuildMemberAdd, async (_, member) => {
         ctx.fillText(`${title}, ${member.user.username} !`, 250, 100)
       })
 
-      await channel.send({
-        embeds: [embed],
-        files: [{ attachment, name: 'welcome.png' }]
-      })
+      try {
+        await channel.send({
+          embeds: [embed],
+          files: [{ attachment, name: 'welcome.png' }]
+        })
+      } catch (error) {
+        Logger.error('Error sending member join log message:', error)
+      }
+    } else {
+      return Logger.error('Log channel not found or is not a text channel!')
     }
   }
 })

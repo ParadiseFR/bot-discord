@@ -1,13 +1,13 @@
 import { ChannelType, EmbedBuilder, Events, TextChannel } from 'discord.js'
 
-import { Config, event, Text } from '../../tools'
+import { event, GuildSettings, Text } from '../../tools'
 
 export default event(Events.ChannelUpdate, async ({ client }, oldChannel, newChannel) => {
   if ('guild' in newChannel && 'guild' in oldChannel) {
     if (oldChannel.type === ChannelType.GuildText && newChannel.type === ChannelType.GuildText) {
-      const logChannel = client.channels.cache.get(Config.LOG_CHANNEL_ID)
+      const { LOGS } = GuildSettings.get(newChannel.guild)
+      const logChannel = client.channels.cache.get(LOGS.LOG_CHANNEL_ID)
 
-      // TODO: not completed yet
       if (logChannel != null && logChannel instanceof TextChannel) {
         const embed = new EmbedBuilder()
           .setColor('#e17055')

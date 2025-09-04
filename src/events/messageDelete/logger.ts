@@ -1,14 +1,16 @@
 import { EmbedBuilder, Events, Guild, TextChannel, User } from 'discord.js'
 
-import { Config, Text, event } from '../../tools'
+import { GuildSettings, Text, event } from '../../tools'
 import { autoModDeletedMessageIds } from '../messageCreate/censored'
 
 export default event(Events.MessageDelete, async ({ client }, message) => {
   if ((message.author as User).bot) return
 
   // skip logging for auto-mod deletions
+  // TODO: refactor this ugly code
   if (!autoModDeletedMessageIds.has(message.id)) {
-    const logChannel = client.channels.cache.get(Config.LOG_CHANNEL_ID)
+    const { LOGS } = GuildSettings.get(message.guild as Guild)
+    const logChannel = client.channels.cache.get(LOGS.LOG_CHANNEL_ID)
 
     if (logChannel != null && logChannel instanceof TextChannel) {
       {
@@ -16,7 +18,7 @@ export default event(Events.MessageDelete, async ({ client }, message) => {
           .setColor('#e17055')
           .setTitle("Suppression d'un message")
           .setDescription(
-            `Le message ${Text.bold(message.content as string)} a été supprimé par ${Text.mention(
+            `Le message ${Text.bold(message.content as string)} a été supprimé par ${Text.mention.user(
               (message.author as User).id
             )}.`
           )

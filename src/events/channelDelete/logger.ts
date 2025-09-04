@@ -1,10 +1,11 @@
 import { EmbedBuilder, Events, TextChannel } from 'discord.js'
 
-import { Config, Logger, Text, event } from '../../tools'
+import { GuildSettings, Logger, Text, event } from '../../tools'
 
 export default event(Events.ChannelDelete, async (_, channel) => {
   if ('guild' in channel) {
-    const logChannel = channel.guild.channels.cache.get(Config.LOG_CHANNEL_ID)
+    const { LOGS } = GuildSettings.get(channel.guild)
+    const logChannel = channel.guild.channels.cache.get(LOGS.LOG_CHANNEL_ID)
 
     if (logChannel != null && logChannel instanceof TextChannel) {
       const embed = new EmbedBuilder()
