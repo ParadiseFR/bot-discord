@@ -5,9 +5,13 @@ import { AutoMod, GuildSettings, event } from '../../tools'
 export default event(Events.MessageCreate, async (_, message) => {
   if (!message.author.bot) {
     if (message.guild != null) {
-      if (!AutoMod.isDeleted(message.id)) {
-        const { AUTOMOD } = GuildSettings.get(message.guild)
+      const { AUTOMOD } = GuildSettings.get(message.guild)
 
+      if (Boolean(AUTOMOD.IGNORED_CHANNEL_IDS.includes(message.channel.id))) return
+      if (message.member?.roles.cache.some((role): boolean => AUTOMOD.IGNORED_ROLE_IDS.includes(role.id)) === true)
+        return
+
+      if (!AutoMod.isDeleted(message.id)) {
         if (message.content.length >= AUTOMOD.CAPS.MIN_LENGTH) {
           const letters = message.content.replace(/[^A-Za-z]/g, '')
 

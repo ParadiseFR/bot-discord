@@ -22,7 +22,20 @@ meta.addSubcommandGroup((group) =>
             .setRequired(true)
         )
     )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('channels')
+        .setDescription('Configurer les salons à ignorer')
+        .addChannelOption((option) => option.setName('channel').setDescription('Le salon à ignorer').setRequired(true))
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('roles')
+        .setDescription('Configurer les rôles à ignorer')
+        .addRoleOption((option) => option.setName('role').setDescription('Le rôles à ignorer').setRequired(true))
+    )
 )
+
 export default command({
   meta,
   cooldown: 2,
@@ -56,6 +69,43 @@ export default command({
 
             break
         }
+
+        break
+      case 'channels':
+        const channel = interaction.options.getChannel('channel', true)
+
+        if (channel.type === ChannelType.GuildText) {
+          const { AUTOMOD } = GuildSettings.get(interaction.guild as Guild)
+
+          if (!Boolean(AUTOMOD.IGNORED_CHANNEL_IDS.includes(channel.id))) {
+            GuildSettings.update(interaction.guild as Guild, {
+              AUTOMOD: { IGNORED_CHANNEL_IDS: [...AUTOMOD.IGNORED_CHANNEL_IDS, channel.id] }
+            })
+
+            await interaction.editReply({
+              content: `✅ Salon de logs ignoré sur ${Text.channel(channel.id)} pour ce serveur.`
+            })
+          }
+        }
+
+        break
+
+      case 'roles':
+        const roles = Boolean(interaction.options.get('roles')?.value)
+          ? [interaction.options.getRole('roles', true).id]
+          : interaction.options.data.filter((opt) => opt.name === 'roles').map((opt) => opt.role?.id)
+
+        GuildSettings.update(interaction.guild as Guild, {
+          AUTOMOD: {
+            IGNORED_ROLE_IDS: [...GuildSettings.get(interaction.guild as Guild).AUTOMOD.IGNORED_ROLE_IDS, ...roles]
+          }
+        })
+
+        await interaction.editReply({
+          content: `✅ Rôles ignoré sur ${roles
+            .map((id) => Text.mention.role(id as string))
+            .join(', ')} pour ce serveur.`
+        })
 
         break
     }

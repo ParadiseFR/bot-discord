@@ -47,6 +47,8 @@ const musicSchema = z.strictObject({
 })
 
 const autoMod = z.strictObject({
+  IGNORED_CHANNEL_IDS: z.array(z.string()).optional().default([]),
+  IGNORED_ROLE_IDS: z.array(z.string()).optional().default([]),
   CAPS: z
     .strictObject({
       MIN_LENGTH: z.number().int().min(1).optional().default(8),
