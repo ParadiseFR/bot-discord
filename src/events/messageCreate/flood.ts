@@ -1,6 +1,6 @@
 import { Events, Guild } from 'discord.js'
 
-import { GuildSettings, event } from '../../tools'
+import { AutoMod, GuildSettings, event } from '../../tools'
 
 const userMessageTimestamps = new Map()
 
@@ -11,6 +11,7 @@ export default event(Events.MessageCreate, async (_, message) => {
   if (message.author.bot) return
   if (ignoredChannelIds.includes(message.channel.id)) return
   if (message.member?.roles.cache.some((role): boolean => ignoredRoleIds.includes(role.id)) === true) return
+  if (!AutoMod.isDeleted(message.id)) return
 
   const userId = message.author.id
   const now = Date.now()

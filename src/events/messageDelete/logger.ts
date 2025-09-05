@@ -5,7 +5,6 @@ import { AutoMod, GuildSettings, Text, event } from '../../tools'
 export default event(Events.MessageDelete, async ({ client }, message) => {
   if ((message.author as User).bot) return
 
-  // skip logging for auto-mod deletions
   // TODO: refactor this ugly code
   if (!AutoMod.isDeleted(message.id)) {
     const { LOGS } = GuildSettings.get(message.guild as Guild)

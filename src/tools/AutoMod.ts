@@ -27,8 +27,8 @@ export class AutoMod {
     const embed = new EmbedBuilder()
       .setColor('#e17055')
       .setAuthor({
-        name: `${reason} - ${message.author.tag} (${message.author.id})`,
-        iconURL: guild.iconURL() as string
+        name: `${reason} - ${message.author.displayName} (@${message.author.tag})`,
+        iconURL: message.author.avatarURL() as string
       })
       .setDescription(
         `${Text.mention.user(message.author.id)} a commis une infraction dans le salon ${Text.channel(

@@ -13,17 +13,18 @@ export default event(Events.MessageCreate, async (_, message) => {
   const ignoredRoleIds = ['roleId1', 'roleId2']
   if (message.member?.roles.cache.some((role): boolean => ignoredRoleIds.includes(role.id)) === true) return
 
-  const badWords = await readFile(ASSETS_DIR('censored.txt')).then((data): string[] => data.toString().split('\n'))
-  const badWordRegex = new RegExp(`\\b(${badWords.join('|')})\\b`, 'gi')
+  if (!AutoMod.isDeleted(message.id)) {
+    const badWords = await readFile(ASSETS_DIR('censored.txt')).then((data): string[] => data.toString().split('\n'))
+    const badWordRegex = new RegExp(`\\b(${badWords.join('|')})\\b`, 'gi')
 
-  if (message.content.length < Math.min(...badWords.map((word): number => word.length))) return
+    if (message.content.length < Math.min(...badWords.map((word): number => word.length))) return
 
-  if (Boolean(message.content.match(badWordRegex))) {
-    try {
-      await AutoMod.delete(message, 'Mots inappropriés')
-      await message.channel.send(`${message.author.username}, please avoid using inappropriate words!`)
-    } catch (error) {
-      Logger.error('Error handling censored message:', error)
+    if (Boolean(message.content.match(badWordRegex))) {
+      try {
+        await AutoMod.delete(message, 'Mots inappropriés')
+      } catch (error) {
+        Logger.error('Error handling censored message:', error)
+      }
     }
   }
 })
