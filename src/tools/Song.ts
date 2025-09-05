@@ -66,8 +66,6 @@ export class Song {
   public async makeResource(): Promise<AudioResource<Song> | undefined> {
     let playStream!: Readable
 
-    // const type = this.url.includes('youtube.com') ? StreamType.Opus : StreamType.OggOpus
-
     const source = this.url.includes('youtube') ? 'youtube' : 'soundcloud'
 
     if (source === 'youtube') {
@@ -78,7 +76,6 @@ export class Song {
       })
     }
 
-    console.log(playStream)
     if (playStream == null) throw new Error('No stream found')
 
     return createAudioResource(playStream, { metadata: this, inlineVolume: true })

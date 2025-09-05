@@ -1,5 +1,3 @@
-import { join } from 'node:path'
-
 import {
   Client,
   Guild,
@@ -16,7 +14,7 @@ import { GlobalFonts } from '@napi-rs/canvas'
 import { google } from 'googleapis'
 
 import type { Command } from './types'
-import { Config, Logger, MusicQueue, registerEvents } from './tools'
+import { ASSETS_DIR, Config, Logger, MusicQueue, ROOT_DIR, registerEvents } from './tools'
 import events from './events'
 
 export class RypiBot {
@@ -28,24 +26,28 @@ export class RypiBot {
   public drive: ReturnType<typeof google.drive>
 
   public constructor(public readonly client: Client<true>) {
-    GlobalFonts.registerFromPath(join(__dirname, '../assets/Alro.ttf'))
+    GlobalFonts.registerFromPath(ASSETS_DIR('Alro.ttf'))
 
     const auth = new google.auth.GoogleAuth({
-      keyFile: join(__dirname, './credentials.json'),
+      keyFile: ROOT_DIR('credentials.json'),
       scopes: ['https://www.googleapis.com/auth/drive']
     })
 
     this.drive = google.drive({ version: 'v3', auth })
 
+    Logger.log('Bot initiated successfully')
+
     this.client
       .login(process.env.TOKEN)
-      .then((): void => Logger.log('Connection Established'))
+      .then((): void => Logger.log('Connection established successfully'))
       .catch((error): void => Logger.error(error))
+      // TODO: execute finally only if no error has been catched
+      .finally((): void => {
+        this.client.on(Events.Warn, (warning): void => Logger.warn(warning))
+        this.client.on(Events.Error, (error): void => Logger.error(error as any))
 
-    this.client.on(Events.Warn, (warning): void => Logger.warn(warning))
-    this.client.on(Events.Error, (error): void => Logger.error(error as any))
-
-    registerEvents(client, events)
+        registerEvents(client, events)
+      })
   }
 
   public async findOrCreateMemberCounterChannel(guild: Guild): Promise<VoiceBasedChannel | undefined> {

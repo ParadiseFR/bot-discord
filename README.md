@@ -4,7 +4,8 @@
 - [ ] Ticket Tool Management System
 - [ ] Logging Event Member Actions (change name/leave/join, delete/modify message, connect/disconnect)
 - [ ] Mod commands (purge, kick)
-- [ ] Music
+- [ ] Music (YouTube/SoundCloud) with queues
 - [ ] Member Counter Channel
 - [ ] Custom welcome/goodbye embed messages
+- [ ] Giveaways
 - [ ] ~~i18n~~

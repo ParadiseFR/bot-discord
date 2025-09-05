@@ -18,4 +18,4 @@ export const BOT_INSTANCE = new RypiBot(
   })
 )
 
-Logger.setPrefix('init', { bg: '#3742fa', text: '#FFF', icon: '📥' })
+Logger.addMainPrefix('init', { bg: '#3742fa', text: '#FFF', label: 'hi' })

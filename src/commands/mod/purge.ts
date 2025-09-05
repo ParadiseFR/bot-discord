@@ -1,16 +1,16 @@
 import { SlashCommandBuilder, PermissionFlagsBits, TextChannel, ThreadChannel } from 'discord.js'
 
-import { command } from '../../tools'
+import { Logger, command } from '../../tools'
 
 const meta = new SlashCommandBuilder()
-  .setName('clear')
-  .setDescription('Supprime les messages dans le salon actuel')
+  .setName('purge')
+  .setDescription('Supprime en quantité les messages dans le salon actuel')
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
 
 meta.addNumberOption((option) =>
   option
     .setName('amount')
-    .setDescription('Nombre de messages à supprimer (1-100)')
+    .setDescription('Nombre de messages à supprimer')
     .setMinValue(1)
     .setMaxValue(100)
     .setRequired(true)
@@ -47,7 +47,7 @@ export default command({
         await interaction.editReply("La suppression en masse n'est pas prise en charge dans ce type de salon.")
       }
     } catch (error) {
-      console.error('Error in clear command:', error)
+      Logger.error('Error in clear command:', error)
       await interaction.editReply("Une erreur s'est produite lors de la suppression des messages.")
     }
   }

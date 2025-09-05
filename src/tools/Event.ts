@@ -40,5 +40,5 @@ export const registerEvents = (client: Client<true>, events: Array<Event<any>>):
     })
   }
 
-  Logger.events('Events registered')
+  Logger.events('Events registered successfully')
 }

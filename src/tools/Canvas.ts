@@ -1,9 +1,8 @@
-import { join } from 'node:path'
-
 import { Canvas as RCanvas, Image, SKRSContext2D, createCanvas, loadImage } from '@napi-rs/canvas'
 import { GuildMember } from 'discord.js'
 
 import { Logger } from './Logger'
+import { ASSETS_DIR } from './Config'
 
 const create = async (
   member: GuildMember,
@@ -12,7 +11,7 @@ const create = async (
 ): Promise<Buffer> => {
   const canvas = createCanvas(700, 250)
   const context = canvas.getContext('2d')
-  const backgroundPath = join(__dirname, '../assets/JOINLEAVE.png')
+  const backgroundPath = ASSETS_DIR('JOINLEAVE.png')
 
   let background: Image | null
 

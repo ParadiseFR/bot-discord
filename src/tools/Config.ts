@@ -6,8 +6,9 @@ import { z } from 'zod'
 import { load } from 'js-yaml'
 
 export const ROOT_DIR = (path?: string): string => {
-  return process.cwd().concat(path != null ? path : '')
+  return process.cwd().concat(path != null ? `/${path}` : '')
 }
+
 export const ASSETS_DIR = (asset: string): string => {
   return `${ROOT_DIR('/assets')}/${asset}`
 }

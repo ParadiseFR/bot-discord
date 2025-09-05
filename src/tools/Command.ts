@@ -29,5 +29,5 @@ export const registerCommands = async (client: Client<true>, commands: CommandCa
     body: categoryCommands.map((command): CommandMeta => command.meta)
   })
 
-  Logger.log('Commands registered')
+  Logger.log('Commands registered successfully')
 }
