@@ -19,37 +19,56 @@ const snowflakeOrEmpty = z.string().refine((val) => val === '' || /^\d{17,20}$/.
   message: 'Invalid channel ID: must be empty string or a valid Discord snowflake (17-20 digits).'
 })
 
-const logsSchema = z
-  .object({
-    WELCOME_CHANNEL_ID: snowflakeOrEmpty.optional().default(''),
-    LOG_CHANNEL_ID: snowflakeOrEmpty.optional().default(''),
-    ADMIN_ANNOUNCE_CHANNEL_ID: snowflakeOrEmpty.optional().default(''),
-    TICKET_CHANNEL_ID: snowflakeOrEmpty.optional().default('')
-  })
-  .strict()
+const logsSchema = z.strictObject({
+  WELCOME_CHANNEL_ID: snowflakeOrEmpty.optional().default(''),
+  LOG_CHANNEL_ID: snowflakeOrEmpty.optional().default(''),
+  ADMIN_ANNOUNCE_CHANNEL_ID: snowflakeOrEmpty.optional().default(''),
+  TICKET_CHANNEL_ID: snowflakeOrEmpty.optional().default('')
+})
 
-const ticketSchema = z
-  .object({
-    LIMIT: z.number().int().min(1).optional().default(3)
-  })
-  .strict()
+const ticketSchema = z.strictObject({
+  LIMIT: z.number().int().min(1).optional().default(3),
+  CATEGORIES: z
+    .array(
+      z.strictObject({
+        name: z.string(),
+        roles: z.array(z.string())
+      })
+    )
+    .optional()
+    .default([])
+})
 
-const musicSchema = z
-  .object({
-    MAX_PLAYLIST_SIZE: z.number().int().min(1).optional().default(10),
-    PRUNING: z.boolean().optional().default(true),
-    STAY_TIME: z.number().int().nonnegative().optional().default(30),
-    DEFAULT_VOLUME: z.number().int().min(0).max(200).optional().default(100)
-  })
-  .strict()
+const musicSchema = z.strictObject({
+  MAX_PLAYLIST_SIZE: z.number().int().min(1).optional().default(10),
+  PRUNING: z.boolean().optional().default(true),
+  STAY_TIME: z.number().int().nonnegative().optional().default(30),
+  DEFAULT_VOLUME: z.number().int().min(0).max(200).optional().default(100)
+})
 
-const guildschema = z
-  .object({
-    LOGS: logsSchema.optional().default(() => ({})),
-    TICKET: ticketSchema.optional().default(() => ({})),
-    MUSIC: musicSchema.optional().default(() => ({}))
-  })
-  .strict()
+const autoMod = z.strictObject({
+  CAPS: z
+    .strictObject({
+      MIN_LENGTH: z.number().int().min(1).optional().default(8),
+      PERCENT: z.number().int().min(1).max(100).optional().default(70)
+    })
+    .optional()
+    .default({}),
+  FLOOD: z
+    .strictObject({
+      MESSAGE_LIMIT: z.number().int().min(1).optional().default(15),
+      TIME_INTERVAL: z.number().int().min(1).optional().default(30)
+    })
+    .optional()
+    .default({})
+})
+
+const guildschema = z.object({
+  LOGS: logsSchema.optional().default({}),
+  TICKET: ticketSchema.optional().default({}),
+  MUSIC: musicSchema.optional().default({}),
+  AUTOMOD: autoMod.optional().default({})
+})
 
 type schemaType = z.infer<typeof guildschema>
 
@@ -141,8 +160,8 @@ class GuildSettingsManager {
   public update(guild: Guild, partialConfig: RecursivePartial<schemaType>): void {
     const currentConfig = this.get(guild)
     const updatedConfig = this.deepMerge(currentConfig, partialConfig)
-
     const result = guildschema.safeParse(updatedConfig)
+
     if (result.success) {
       this._cache.add(guild.id, result.data)
       this.save()

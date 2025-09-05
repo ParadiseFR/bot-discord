@@ -1,14 +1,13 @@
 import { EmbedBuilder, Events, Guild, TextChannel, User } from 'discord.js'
 
-import { GuildSettings, Text, event } from '../../tools'
-import { autoModDeletedMessageIds } from '../messageCreate/censored'
+import { AutoMod, GuildSettings, Text, event } from '../../tools'
 
 export default event(Events.MessageDelete, async ({ client }, message) => {
   if ((message.author as User).bot) return
 
   // skip logging for auto-mod deletions
   // TODO: refactor this ugly code
-  if (!autoModDeletedMessageIds.has(message.id)) {
+  if (!AutoMod.isDeleted(message.id)) {
     const { LOGS } = GuildSettings.get(message.guild as Guild)
     const logChannel = client.channels.cache.get(LOGS.LOG_CHANNEL_ID)
 

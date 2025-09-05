@@ -2,9 +2,7 @@ import { readFile } from 'node:fs/promises'
 
 import { Events } from 'discord.js'
 
-import { ASSETS_DIR, event } from '../../tools'
-
-export const autoModDeletedMessageIds = new Set<string>()
+import { ASSETS_DIR, AutoMod, Logger, event } from '../../tools'
 
 export default event(Events.MessageCreate, async (_, message) => {
   if (message.author.bot) return
@@ -22,14 +20,10 @@ export default event(Events.MessageCreate, async (_, message) => {
 
   if (Boolean(message.content.match(badWordRegex))) {
     try {
-      autoModDeletedMessageIds.add(message.id)
-      await message.delete()
+      await AutoMod.delete(message, 'Mots inappropriés')
       await message.channel.send(`${message.author.username}, please avoid using inappropriate words!`)
-      setTimeout(() => {
-        autoModDeletedMessageIds.delete(message.id)
-      }, 30000)
     } catch (error) {
-      console.error('Error handling censored message:', error)
+      Logger.error('Error handling censored message:', error)
     }
   }
 })

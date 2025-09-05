@@ -1,14 +1,13 @@
 import { Events } from 'discord.js'
 
-import { event } from '../../tools'
+import { AutoMod, event } from '../../tools'
 
 export default event(Events.MessageCreate, async (_, message) => {
-  if (message.author.bot) return
-  // TODO: ignore certain roles & channels
+  if (!message.author.bot) {
+    const content = message.content.toLowerCase()
 
-  const content = message.content.toLowerCase()
-
-  if (content.includes('discord.gg/') || content.includes('discord.com/invite')) {
-    await message.delete()
+    if (content.includes('discord.gg/') || content.includes('discord.com/invite')) {
+      await AutoMod.delete(message, "Lien d'invitation")
+    }
   }
 })
