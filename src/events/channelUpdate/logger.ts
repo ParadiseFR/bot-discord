@@ -1,6 +1,6 @@
 import { ChannelType, EmbedBuilder, Events, TextChannel } from 'discord.js'
 
-import { event, GuildSettings, Text } from '../../tools'
+import { event, GuildSettings, Logger, Text } from '../../tools'
 
 export default event(Events.ChannelUpdate, async ({ client }, oldChannel, newChannel) => {
   if ('guild' in newChannel && 'guild' in oldChannel) {
@@ -24,6 +24,14 @@ export default event(Events.ChannelUpdate, async ({ client }, oldChannel, newCha
             }`,
             inline: false
           })
+        }
+
+        // INCOMPLETE
+
+        try {
+          await logChannel.send({ embeds: [embed] })
+        } catch (error) {
+          Logger.error('Error sending channel update log message:', error)
         }
       }
     }
