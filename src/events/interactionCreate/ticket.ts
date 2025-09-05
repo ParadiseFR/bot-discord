@@ -6,12 +6,16 @@ import {
   ButtonStyle,
   ChannelType,
   Collection,
+  ComponentType,
   EmbedBuilder,
   Events,
   Guild,
   GuildBasedChannel,
   GuildMember,
+  MessageActionRowComponentBuilder,
+  OverwriteData,
   PermissionFlagsBits,
+  StringSelectMenuBuilder,
   TextChannel,
   User
 } from 'discord.js'
@@ -138,22 +142,131 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
 
     switch (customId) {
       case 'TICKET_CREATE':
-        await interaction.deferReply({ ephemeral: true })
+        if (channel != null && 'guild' in channel && guild != null && user != null) {
+          await interaction.deferReply({ ephemeral: true })
 
-        if (Boolean(guild?.members.me?.permissions.has(PermissionFlagsBits.ManageChannels))) {
-          return await interaction.followUp('Cannot create ticket channel, missing `Manage Channel` permission')
+          if (Boolean(guild?.members.me?.permissions.has(PermissionFlagsBits.ManageChannels))) {
+            return await interaction.followUp('Cannot create ticket channel, missing `Manage Channel` permission')
+          }
+
+          if (getExistingTicketChannel(guild, user.id) != null) {
+            return await interaction.followUp(`You already have an open ticket`)
+          }
+
+          const { TICKET } = GuildSettings.get(guild)
+
+          const existing = getTicketChannels(guild).size
+          if (existing != null && existing > TICKET.LIMIT)
+            return await interaction.followUp('There are too many open tickets. Try again later')
+
+          let catName: string | null = null
+          let catPerms = [] as string[]
+
+          if (TICKET.CATEGORIES.length > 0) {
+            const options = TICKET.CATEGORIES.map((cat) => ({
+              label: cat.name,
+              value: cat.name
+            }))
+
+            const menuRow = new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+              new StringSelectMenuBuilder()
+                .setCustomId('ticket-menu')
+                .setPlaceholder('Choose the ticket category')
+                .addOptions(options)
+            )
+
+            await interaction.followUp({ content: 'Please choose a ticket category', components: [menuRow] })
+
+            const res = await channel.awaitMessageComponent({
+              componentType: ComponentType.StringSelect,
+              time: 60 * 1000
+            })
+            /* .catch((error) => {
+                if (error.message.includes('time')) return
+              }) */
+
+            if (res == null) return await interaction.editReply({ content: 'Timed out. Try again', components: [] })
+
+            await interaction.editReply({ content: 'Processing', components: [] })
+
+            catName = res.values[0]
+            catPerms = TICKET.CATEGORIES.find((cat) => cat.name === catName)?.roles ?? []
+          }
+
+          try {
+            const ticketNumber = (existing + 1).toString()
+            const permissionOverwrites = [
+              { id: guild.roles.everyone, deny: ['ViewChannel'] },
+              { id: user.id, allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory'] },
+              {
+                id: guild.members.me?.roles.highest.id as string,
+                allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory']
+              }
+            ] satisfies OverwriteData[]
+
+            if (catPerms?.length > 0) {
+              if (catPerms != null && catPerms.length > 0)
+                for (const roleId of catPerms) {
+                  const role = guild.roles.cache.get(roleId)
+
+                  if (role == null) continue
+
+                  permissionOverwrites.push({
+                    id: role.id,
+                    allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory']
+                  })
+                }
+            }
+
+            const tktChannel = await guild.channels.create({
+              name: `ticket-${ticketNumber}`,
+              type: ChannelType.GuildText,
+              topic: `ticket|${user.id}|${catName ?? 'Default'}`,
+              permissionOverwrites
+            })
+
+            const embed = new EmbedBuilder()
+              .setAuthor({ name: `Ticket #${ticketNumber}` })
+              .setDescription(
+                `Hello ${user.toString()}
+              Support will be with you shortly
+              ${catName != null ? `\n**Category:** ${catName}` : ''}
+              `
+              )
+              .setFooter({ text: 'You may close your ticket anytime by clicking the button below' })
+
+            const buttonsRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+              new ButtonBuilder()
+                .setLabel('Close Ticket')
+                .setCustomId('TICKET_CLOSE')
+                .setEmoji('🔒')
+                .setStyle(ButtonStyle.Primary)
+            )
+
+            const sent = await tktChannel.send({ content: user.toString(), embeds: [embed], components: [buttonsRow] })
+
+            const dmEmbed = new EmbedBuilder()
+              .setColor('Blue')
+              .setAuthor({ name: 'Ticket Created' })
+              .setThumbnail(guild.iconURL())
+              .setDescription(
+                `**Server:** ${guild.name}
+              ${catName != null ? `**Category:** ${catName}` : ''}
+              `
+              )
+
+            const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+              new ButtonBuilder().setLabel('View Channel').setURL(sent.url).setStyle(ButtonStyle.Link)
+            )
+
+            await user.send({ embeds: [dmEmbed], components: [row] })
+
+            await interaction.editReply(`Ticket created! 🔥`)
+          } catch (error_) {
+            Logger.error('handleTicketOpen', error_)
+            return await interaction.editReply('Failed to create ticket channel, an error occurred!')
+          }
         }
-
-        if (getExistingTicketChannel(guild as Guild, user.id) != null) {
-          return await interaction.followUp(`You already have an open ticket`)
-        }
-
-        const { TICKET } = GuildSettings.get(guild as Guild)
-        const existing = getTicketChannels(guild as Guild).size
-        if (existing != null && existing > TICKET.LIMIT)
-          return await interaction.followUp('There are too many open tickets. Try again later')
-
-        // INCOMPLETE
 
         break
       case 'TICKET_CLOSE':
