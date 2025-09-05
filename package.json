@@ -1,13 +1,12 @@
 {
   "name": "@rypi/discord-bot",
   "version": "0.0.0",
-  "description": "🤖 Discord bot for guiding developers around the globe to build their own Habbo retro",
+  "description": "🤖 Discord bot for Rypî Discord Community",
   "main": "dist/app.js",
   "scripts": {
-    "dev": "NODE_ENV=development ts-node-dev --clear src/app.ts",
-    "start": "NODE_ENV=production ts-node src/app.ts",
-    "start:prod": "node dist/app.js",
-    "build": "tsc",
+    "dev": "NODE_ENV=development tsx watch --clear-screen src/app.ts",
+    "build": "swc src -d dist",
+    "start": "NODE_ENV=production node dist/src/app.js",
     "lint:typescript": "eslint \"**/*.ts\" --ignore-path \".gitignore\" && tsc --noemit",
     "lint:prettier": "prettier \".\" --check --ignore-unknown '!**/*.yml' --ignore-path \".gitignore\""
   },
@@ -38,11 +37,11 @@
     "@types/node": "20.4.6",
     "@walidoux/eslint-config": "1.0.7",
     "@walidoux/prettier-config": "1.0.3",
+    "@swc/cli": "^0.7.8",
+    "@swc/core": "^1.13.5",
     "eslint": "8.46.0",
     "prettier": "3.0.1",
-    "ts-node": "10.9.1",
-    "ts-node-dev": "2.0.0",
-    "tslib": "^2.6.1",
+    "tsx": "^4.20.5",
     "typescript": "5.1.6"
   },
   "prettier": "@walidoux/prettier-config",
