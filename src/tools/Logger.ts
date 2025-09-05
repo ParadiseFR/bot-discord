@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import { Guild } from 'discord.js'
 
 import { Config } from './Config'
 
@@ -12,7 +13,7 @@ interface PrefixConfig {
 }
 
 interface MainPrefixConfig {
-  label: string
+  label: string | ((guild: Guild) => string)
   bg: `#${string}`
   text: `#${string}`
 }
@@ -52,20 +53,37 @@ export class Logger {
     } as PrefixConfig
   }
 
-  private static _PREFIX(type: string, mainPrefixKey?: string): string {
+  private static _PREFIX(type: string, mainPrefixKey?: string, guild?: Guild): string {
     const prefixConfig = this.customPrefixes[type] ?? this.defaultPrefixes[type as keyof typeof this.defaultPrefixes]
     if (prefixConfig == null) {
       throw new Error(`Unknown log type: ${type}`)
     }
 
-    const mainPrefix = mainPrefixKey != null ? this.customMainPrefixes[mainPrefixKey] : this.defaultMainPrefix
+    let mainPrefix: MainPrefixConfig
 
-    if (mainPrefix == null) {
-      throw new Error(`Unknown main prefix key: ${mainPrefixKey}`)
+    if (mainPrefixKey != null && this.customMainPrefixes[mainPrefixKey] != null) {
+      mainPrefix = this.customMainPrefixes[mainPrefixKey]
+    } else {
+      mainPrefix = this.defaultMainPrefix
+    }
+
+    let labelText: string
+
+    if (typeof mainPrefix.label === 'function') {
+      if (guild != null) {
+        labelText = mainPrefix.label(guild)
+      } else {
+        labelText =
+          typeof this.defaultMainPrefix.label === 'function'
+            ? this.defaultMainPrefix.label(guild as any) // should never happen with default config
+            : this.defaultMainPrefix.label
+      }
+    } else {
+      labelText = mainPrefix.label
     }
 
     const { bg, text, icon, title } = prefixConfig
-    const mainPrefixStr = chalk.bgHex(mainPrefix.bg).hex(mainPrefix.text).bold(` ${mainPrefix.label} `)
+    const mainPrefixStr = chalk.bgHex(mainPrefix.bg).hex(mainPrefix.text).bold(` ${labelText} `)
 
     const logPrefixStr = chalk
       .bgHex(bg)
@@ -75,11 +93,30 @@ export class Logger {
     return mainPrefixStr + logPrefixStr
   }
 
+  public static logWithGuild(guild: Guild, message: string, ...optionalParams: any[]): void {
+    if (!this.LOG_DEBUG) return
+
+    const prefix = this._PREFIX('debug', guild?.id, guild)
+    console.log(prefix, message, ...optionalParams)
+  }
+
   public static log(mainPrefixKeyOrMsg: string, ...messages: any[]): void {
     if (!this.LOG_DEBUG) return
 
     const [mainPrefixKey, msg] = this._parseArgs(mainPrefixKeyOrMsg, ...messages)
     console.log(this._PREFIX('debug', mainPrefixKey), msg)
+  }
+
+  public static guildEvent(guild: Guild, message: string): void {
+    if (!this.LOG_EVENTS) return
+
+    const prefix = this._PREFIX('events', guild?.id, guild)
+    console.log(prefix, message)
+  }
+
+  public static guildCommand(guild: Guild, message: string): void {
+    const prefix = this._PREFIX('commands', guild?.id, guild)
+    console.log(prefix, message)
   }
 
   public static warn(mainPrefixKeyOrMsg: string, ...messages: any[]): void {

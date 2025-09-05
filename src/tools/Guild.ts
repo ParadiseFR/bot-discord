@@ -112,6 +112,11 @@ class GuildSettingsManager {
           const result = guildschema.safeParse(settings)
           if (result.success) {
             this._cache.add(guildId, result.data)
+            Logger.addMainPrefix(guildId, {
+              bg: '#000000',
+              label: (guild: Guild): string => guild.name,
+              text: '#ffffff'
+            })
           } else {
             Logger.warn(
               `Invalid config for guild ${guildId}, skipping: ${JSON.stringify(result.error.issues, null, 2)}`

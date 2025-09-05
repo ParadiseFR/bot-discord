@@ -38,6 +38,8 @@ export default event(Events.GuildMemberUpdate, async (_, oldMember, newMember) =
             .setColor('Red')
 
           await channel.send({ embeds: [embed] }).catch(Logger.error)
+
+          return newMember.guild
         }
       }
     }

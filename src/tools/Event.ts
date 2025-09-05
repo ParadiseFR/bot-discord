@@ -29,10 +29,12 @@ export const registerEvents = (client: Client<true>, events: Array<Event<any>>):
           const eventName = Text.toUpperSnakeCase(eventKey)
 
           for (const handler of handlers) {
-            await handler(props, ...args)
-          }
+            const guild = await handler(props, ...args)
 
-          Logger.events(`Event ${eventName} dispatched (${handlers.length} handlers)`)
+            if (guild != null) {
+              Logger.guildEvent(guild, `Event ${eventName} dispatched (${handlers.length} handlers)`)
+            }
+          }
         }
       } catch (error) {
         Logger.error('Uncaught error:', error)

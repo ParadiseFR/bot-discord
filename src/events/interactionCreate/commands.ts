@@ -1,4 +1,4 @@
-import { Collection, Events } from 'discord.js'
+import { Collection, Events, Guild } from 'discord.js'
 
 import { Logger, MissingPermissionsExceptionError, checkPermissions, event } from '../../tools'
 import { BOT_INSTANCE } from '../../app'
@@ -22,10 +22,12 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
         if (now < expirationTime) {
           const timeLeft = (expirationTime - now) / 1000
           // TODO: change content message
-          return await interaction.reply({
+          await interaction.reply({
             content: `cooldown bitch, time: ${timeLeft.toFixed(1)}, name: ${interaction.commandName}`,
             ephemeral: true
           })
+
+          return interaction.guild as Guild
         }
       }
 
@@ -38,7 +40,10 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
         if (permissionsCheck.result) {
           command.execute({ interaction })
 
-          Logger.custom('commands', `Command ${interaction.commandName} executed by ${interaction.user.tag}`)
+          Logger.guildCommand(
+            interaction.guild as Guild,
+            `Command ${interaction.commandName} executed by ${interaction.user.tag}`
+          )
         } else {
           throw new MissingPermissionsExceptionError(permissionsCheck.missing)
         }

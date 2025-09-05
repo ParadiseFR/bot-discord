@@ -4,7 +4,7 @@ import { Logger, event, registerCommands } from '../tools'
 import commands from '../commands'
 import { BOT_INSTANCE } from '../app'
 
-export default event(Events.ClientReady, async ({ client }): Promise<void> => {
+export default event(Events.ClientReady, async ({ client }) => {
   const servers = client.guilds.cache.map((g): string => g.name).join(', ')
   Logger.custom('init', `${client.user.tag} is connected on ${client.guilds.cache.size} servers! (${servers})`)
 
@@ -15,6 +15,8 @@ export default event(Events.ClientReady, async ({ client }): Promise<void> => {
   for (const guild of client.guilds.cache.values()) {
     try {
       await BOT_INSTANCE.updateMemberCount(guild)
+
+      return guild
     } catch (error) {
       Logger.error(`Error updating member count for guild ${guild.name}:`, error)
     }

@@ -6,5 +6,8 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
+  },
+  "search.exclude": {
+    "**/dist": true
   }
 }

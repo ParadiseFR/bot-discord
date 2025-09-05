@@ -40,5 +40,7 @@ export default event(Events.VoiceStateUpdate, async ({ client }, oldState, newSt
     }
 
     await logChannel.send({ embeds: [embed] })
+
+    return logChannel.guild
   }
 })
