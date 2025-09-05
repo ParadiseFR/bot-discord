@@ -37,6 +37,8 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
 
         if (permissionsCheck.result) {
           command.execute({ interaction })
+
+          Logger.custom('commands', `Command ${interaction.commandName} executed by ${interaction.user.tag}`)
         } else {
           throw new MissingPermissionsExceptionError(permissionsCheck.missing)
         }

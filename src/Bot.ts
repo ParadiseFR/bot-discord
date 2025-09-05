@@ -26,6 +26,8 @@ export class RypiBot {
   public drive: ReturnType<typeof google.drive>
 
   public constructor(public readonly client: Client<true>) {
+    Logger.custom('env', `Running on ${process.env.NODE_ENV?.toUpperCase()} mode`)
+
     GlobalFonts.registerFromPath(ASSETS_DIR('Alro.ttf'))
 
     const auth = new google.auth.GoogleAuth({
