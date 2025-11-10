@@ -96,9 +96,8 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            NODE_ENV=production
+           labels: ${{ steps.meta.outputs.labels }}
+           build-args: NODE_ENV=production
            no-cache: true
 
       - name: Test Docker image
@@ -107,9 +106,9 @@ jobs:
           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main --version || echo "Docker image test completed"
 
-      - name: Deploy to production
-        if: github.ref == 'refs/heads/main'
-        run: |
+      # - name: Deploy to production
+      #   if: github.ref == 'refs/heads/main'
+      #   run: |
            echo "🚀 Deployment to production triggered"
            echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
 
