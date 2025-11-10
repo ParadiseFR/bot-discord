@@ -12,12 +12,16 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Set image name
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_NAME=${OWNER}/bot-discord" >> $GITHUB_ENV
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -95,30 +99,29 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             NODE_ENV=production
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          no-cache: true
 
       - name: Test Docker image
         run: |
           # Pull the image to verify it works
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest --version || echo "Docker image test completed"
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main --version || echo "Docker image test completed"
 
-       - name: Deploy to production
-         if: github.ref == 'refs/heads/main'
-         run: |
-           echo "🚀 Deployment to production triggered"
-           echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+      - name: Deploy to production
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "🚀 Deployment to production triggered"
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
 
-           # Install sshpass for password authentication
-           sudo apt-get update && sudo apt-get install -y sshpass
+          # Install sshpass for password authentication
+          sudo apt-get update && sudo apt-get install -y sshpass
 
-           # Deploy via SSH
-           sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
-           set -e
+          # Deploy via SSH
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
+          set -e
 
            echo "Pulling latest Docker image..."
-           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
 
            echo "Stopping existing bot container..."
            docker stop discord-bot || echo "No existing container to stop"
@@ -131,16 +134,16 @@ jobs:
              --name discord-bot \
              --restart unless-stopped \
              -e DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
-             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
 
-           echo "Waiting for container to start..."
-           sleep 10
+          echo "Waiting for container to start..."
+          sleep 10
 
-           echo "Checking container status..."
-           docker ps | grep discord-bot
+          echo "Checking container status..."
+          docker ps | grep discord-bot
 
-           echo "Deployment completed successfully!"
-           EOF
+          echo "Deployment completed successfully!"
+          EOF
 
 #      - name: Notify on failure
 #        if: failure()
