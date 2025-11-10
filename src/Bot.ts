@@ -67,8 +67,6 @@ export class Bot {
         }
       }
 
-      console.log(channelId)
-
       const channelName = `Members: ${count}`
       const channel = await guild.channels.create({
         name: channelName,

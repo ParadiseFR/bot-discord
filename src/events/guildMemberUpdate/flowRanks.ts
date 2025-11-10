@@ -1,10 +1,10 @@
 import { EmbedBuilder, Events, TextChannel } from 'discord.js'
 
-import { Config, GuildSettings, Logger, Text, event } from '../../tools'
+import { GuildSettings, Logger, Text, event } from '../../tools'
 
 export default event(Events.GuildMemberUpdate, async (_, oldMember, newMember) => {
-  // TODO: migrate to guild settings
-  for (const roleId of Config.LISTEN_ROLE_IDS) {
+  const { LISTEN_ROLE_IDS } = GuildSettings.get(newMember.guild)
+  for (const roleId of LISTEN_ROLE_IDS) {
     const hadRole = oldMember.roles.cache.has(roleId)
     const hasRole = newMember.roles.cache.has(roleId)
     const role = newMember.guild.roles.cache.get(roleId)

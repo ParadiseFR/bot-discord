@@ -70,6 +70,8 @@ const guildschema = z.object({
   TICKET: ticketSchema.optional().default({}),
   MUSIC: musicSchema.optional().default({}),
   AUTOMOD: autoMod.optional().default({}),
+
+  LISTEN_ROLE_IDS: z.array(z.string()).optional().default([]),
   MEMBER_COUNTER_CHANNEL_ID: snowflakeOrEmpty.optional().default('')
 })
 

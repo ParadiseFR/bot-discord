@@ -24,6 +24,17 @@ meta.addSubcommandGroup((group) =>
     )
     .addSubcommand((subcommand) =>
       subcommand
+        .setName('welcome')
+        .setDescription('Configurer le salon de bienvenue')
+        .addChannelOption((option) =>
+          option
+            .setName('channel')
+            .setDescription('Le canal où les messages de bienvenue seront envoyés')
+            .setRequired(true)
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
         .setName('channels')
         .setDescription('Configurer les salons à ignorer')
         .addChannelOption((option) => option.setName('channel').setDescription('Le salon à ignorer').setRequired(true))
@@ -44,13 +55,12 @@ export default command({
 
     const subcommandGroup = interaction.options.getSubcommandGroup()
     const subcommand = interaction.options.getSubcommand(true)
+    const channel = interaction.options.getChannel('channel', true)
 
     switch (subcommandGroup) {
       case 'logger':
         switch (subcommand) {
           case 'message':
-            const channel = interaction.options.getChannel('channel', true)
-
             if (channel.type === ChannelType.GuildText) {
               const { LOGS } = GuildSettings.get(interaction.guild as Guild)
 
@@ -60,7 +70,10 @@ export default command({
                 await interaction.editReply({
                   content: `✅ Salon de logs défini sur ${Text.channel(channel.id)} pour ce serveur.`
                 })
-              }
+              } else
+                await interaction.editReply({
+                  content: `Salon de logs déjà défini ici.`
+                })
             } else {
               await interaction.editReply({
                 content: 'Erreur : Veuillez sélectionner un canal textuel valide.'
@@ -68,12 +81,30 @@ export default command({
             }
 
             break
+          case 'welcome':
+            if (channel.type === ChannelType.GuildText) {
+              const { LOGS } = GuildSettings.get(interaction.guild as Guild)
+
+              if (channel.id !== LOGS.WELCOME_CHANNEL_ID) {
+                GuildSettings.update(interaction.guild as Guild, { LOGS: { WELCOME_CHANNEL_ID: channel.id } })
+
+                await interaction.editReply({
+                  content: `✅ Salon de bienvenue défini sur ${Text.channel(channel.id)} pour ce serveur.`
+                })
+              } else
+                await interaction.editReply({
+                  content: `Salon de bienvenue déjà défini ici.`
+                })
+            } else {
+              await interaction.editReply({
+                content: 'Erreur : Veuillez sélectionner un canal textuel valide.'
+              })
+            }
+            break
         }
 
         break
       case 'channels':
-        const channel = interaction.options.getChannel('channel', true)
-
         if (channel.type === ChannelType.GuildText) {
           const { AUTOMOD } = GuildSettings.get(interaction.guild as Guild)
 

@@ -2,20 +2,21 @@
 
 ## Build & Development Commands
 
-- **Development**: `bun run dev` - Start with live reload
-- **Build**: `bun run build` - Compile TypeScript with SWC
-- **Production**: `bun run start` - Run compiled code
-- **Typecheck**: `tsc --noemit` - Run single TypeScript check
-- **Lint TypeScript**: `eslint "**/*.ts" --ignore-path ".gitignore" && tsc --noemit`
-- **Format Check**: `prettier "." --check --ignore-unknown '!**/*.yml' --ignore-path ".gitignore"`
+- **Development**: `bun run dev` - Start with live reload using tsx
+- **Build**: `bun run build` - Compile TypeScript with SWC to dist/
+- **Production**: `bun run start` - Run compiled code from dist/
+- **Typecheck**: `tsc --noemit` - Run TypeScript type checking
+- **Lint**: `bun run lint:typescript` - ESLint + TypeScript check
+- **Format Check**: `bun run lint:prettier` - Prettier formatting check
+- **Database**: `bun run db:generate/db:push/db:seed/db:reset` - Prisma commands
 
 ## Code Style Guidelines
 
-- **TypeScript**: Strict mode enabled, use explicit types, no `any`
-- **Imports**: Use absolute imports from `src/` root, group external libs first
-- **Naming**: PascalCase for classes, camelCase for variables/functions, SCREAMING_SNAKE_CASE for constants
-- **Error Handling**: Use try/catch blocks, return void or throw errors
-- **Formatting**: Use Prettier config `@walidoux/prettier-config`, ESLint config `@walidoux/eslint-config`
-- **Discord.js**: Use v14+ API, prefer `event()` wrapper, use `Collection` for command storage
-- **Async/Await**: Always use for async operations, handle promises properly
-- **Modules**: CommonJS output, ESNext target, `.d.ts` files generated
+- **TypeScript**: Strict mode, explicit types, no `any`, branded type interfaces
+- **Imports**: Absolute paths from `src/`, external libs first, then internal imports
+- **Naming**: PascalCase classes, camelCase vars/functions, SCREAMING_SNAKE_CASE constants
+- **Error Handling**: Try/catch with Logger.error(), return void or throw, no silent failures
+- **Formatting**: Prettier `@walidoux/prettier-config`, ESLint `@walidoux/eslint-config`
+- **Discord.js**: v14+ API, `Collection` for storage, proper intent/partial handling, use `MessageFlags.Ephemeral` instead of `ephemeral: true`
+- **Async/Await**: Always use, handle promises with proper error catching
+- **Modules**: ESNext target, CommonJS output, declaration files generated
