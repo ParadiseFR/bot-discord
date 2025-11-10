@@ -3,7 +3,7 @@ name: Deploy Discord Bot
 on:
   push:
     branches:
-      - dev
+      - main
   workflow_dispatch:
 
 permissions:
@@ -104,14 +104,43 @@ jobs:
           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest --version || echo "Docker image test completed"
 
-      - name: Deploy to production
-        if: github.ref == 'refs/heads/dev'
-        run: |
-          echo "🚀 Deployment to production triggered"
-          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          # Add your deployment commands here
-          # For example: kubectl set image, docker-compose up -d, etc.
-          # Or use GitHub Deployments API for external deployments
+       - name: Deploy to production
+         if: github.ref == 'refs/heads/main'
+         run: |
+           echo "🚀 Deployment to production triggered"
+           echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+
+           # Install sshpass for password authentication
+           sudo apt-get update && sudo apt-get install -y sshpass
+
+           # Deploy via SSH
+           sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
+           set -e
+
+           echo "Pulling latest Docker image..."
+           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+           echo "Stopping existing bot container..."
+           docker stop discord-bot || echo "No existing container to stop"
+
+           echo "Removing existing bot container..."
+           docker rm discord-bot || echo "No existing container to remove"
+
+           echo "Starting new bot container..."
+           docker run -d \
+             --name discord-bot \
+             --restart unless-stopped \
+             -e DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
+             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+           echo "Waiting for container to start..."
+           sleep 10
+
+           echo "Checking container status..."
+           docker ps | grep discord-bot
+
+           echo "Deployment completed successfully!"
+           EOF
 
 #      - name: Notify on failure
 #        if: failure()
