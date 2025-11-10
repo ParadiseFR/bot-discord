@@ -8,12 +8,12 @@ export class Randomizer {
   }
 
   public static getRandomElements<T>(elements: T[], count: number): T[] {
-    const result: T[] = new Array(count)
+    const result: T[] = Array.from({ length: count })
     let len = elements.length
-    const taken = new Array(len)
+    const taken: number[] = Array.from({ length: len })
 
     while (count--) {
-      var x = this.getRandomNumber(len)
+      const x = this.getRandomNumber(len)
       result[count] = elements[x in taken ? taken[x] : x]
       taken[x] = --len in taken ? taken[len] : len
     }
