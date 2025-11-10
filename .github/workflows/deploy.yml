@@ -96,9 +96,9 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-           labels: ${{ steps.meta.outputs.labels }}
-           build-args: NODE_ENV=production
-           no-cache: true
+    labels: ${{ steps.meta.outputs.labels }}
+    build-args: "NODE_ENV=production"
+    no-cache: true
 
       # - name: Test Docker image
       #   run: |
