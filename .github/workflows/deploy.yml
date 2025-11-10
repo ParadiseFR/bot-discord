@@ -6,11 +6,6 @@ on:
       - dev
   workflow_dispatch:
 
-# Ensure only one deployment runs at a time
-concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: true
-
 permissions:
   contents: read
   packages: write
