@@ -16,4 +16,4 @@ LICENSE
 .editorconfig
 coverage*
 \*.log
-src
+# src  # Commented out - needed for build
