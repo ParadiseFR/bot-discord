@@ -107,23 +107,17 @@ jobs:
           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main --version || echo "Docker image test completed"
 
-       - name: Deploy to production
-         if: github.ref == 'refs/heads/main'
-         run: |
-           echo "🚀 Deployment to production triggered"
-           echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+      - name: Deploy to production
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "🚀 Deployment to production triggered"
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
 
-           # Install sshpass for password authentication
-           sudo apt-get update && sudo apt-get install -y sshpass
+          # Install sshpass for password authentication
+          sudo apt-get update && sudo apt-get install -y sshpass
 
-           # Export secrets for use in SSH session
-           export IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main"
-           export DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}"
-           export GUILD_ID="${{ secrets.GUILD_ID }}"
-           export CLIENT_ID="${{ secrets.CLIENT_ID }}"
-
-           # Deploy via SSH
-           sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << EOF
+          # Deploy via SSH
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
           set -e
 
           echo "Checking if Docker is installed..."
@@ -150,68 +144,68 @@ jobs:
           echo "Creating production directory if it doesn't exist..."
           mkdir -p ~/discord-bot-prod
 
-           echo "Updating docker-compose.prod.yml..."
-           cat > ~/discord-bot-prod/docker-compose.prod.yml << 'DOCKER_COMPOSE_EOF'
-           services:
-             discord-bot:
-               image: '"$IMAGE_TAG"'
-               container_name: discord_bot_prod
-               restart: unless-stopped
-               environment:
-                 - NODE_ENV=production
-                 - DATABASE_URL=postgresql://bot_user:bot_password@postgres:5432/discord_bot
-                 - DISCORD_TOKEN='"$DISCORD_TOKEN"'
-                 - GUILD_ID='"$GUILD_ID"'
-                 - CLIENT_ID='"$CLIENT_ID"'
-                 - DATABASE_HOST=postgres
-                 - DATABASE_PORT=5432
-                 - DATABASE_NAME=discord_bot
-                 - DATABASE_USER=bot_user
-                 - DATABASE_PASSWORD=bot_password
-               volumes:
-                 - ./logs:/app/logs
-                 - ./config:/app/config
-               depends_on:
-                 postgres:
-                   condition: service_healthy
-               networks:
-                 - discord_bot_network
-               healthcheck:
-                 test: ['CMD', 'node', '--version']
-                 interval: 30s
-                 timeout: 10s
-                 retries: 3
-                 start_period: 40s
+          echo "Updating docker-compose.prod.yml..."
+          cat > ~/discord-bot-prod/docker-compose.prod.yml << 'DOCKER_COMPOSE_EOF'
+          services:
+            discord-bot:
+              image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+              container_name: discord_bot_prod
+              restart: unless-stopped
+              environment:
+                - NODE_ENV=production
+                - DATABASE_URL=postgresql://bot_user:bot_password@postgres:5432/discord_bot
+                - DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}"
+                - GUILD_ID="${{ secrets.GUILD_ID }}"
+                - CLIENT_ID="${{ secrets.CLIENT_ID }}"
+                - DATABASE_HOST=postgres
+                - DATABASE_PORT=5432
+                - DATABASE_NAME=discord_bot
+                - DATABASE_USER=bot_user
+                - DATABASE_PASSWORD=bot_password
+              volumes:
+                - ./logs:/app/logs
+                - ./config:/app/config
+              depends_on:
+                postgres:
+                  condition: service_healthy
+              networks:
+                - discord_bot_network
+              healthcheck:
+                test: ['CMD', 'node', '--version']
+                interval: 30s
+                timeout: 10s
+                retries: 3
+                start_period: 40s
 
-             postgres:
-               image: postgres:15-alpine
-               container_name: discord_bot_db_prod
-               restart: unless-stopped
-               environment:
-                 POSTGRES_DB: discord_bot
-                 POSTGRES_USER: bot_user
-                 POSTGRES_PASSWORD: bot_password
-                 POSTGRES_INITDB_ARGS: '--encoding=UTF8 --lc-collate=C --lc-ctype=C'
-               volumes:
-                 - postgres_data_prod:/var/lib/postgresql/data
-               ports:
-                 - '5432:5432'
-               healthcheck:
-                 test: ['CMD-SHELL', 'pg_isready -U bot_user -d discord_bot']
-                 interval: 10s
-                 timeout: 5s
-                 retries: 5
-               networks:
-                 - discord_bot_network
+            postgres:
+              image: postgres:15-alpine
+              container_name: discord_bot_db_prod
+              restart: unless-stopped
+              environment:
+                POSTGRES_DB: discord_bot
+                POSTGRES_USER: bot_user
+                POSTGRES_PASSWORD: bot_password
+                POSTGRES_INITDB_ARGS: '--encoding=UTF8 --lc-collate=C --lc-ctype=C'
+              volumes:
+                - postgres_data_prod:/var/lib/postgresql/data
+              ports:
+                - '5432:5432'
+              healthcheck:
+                test: ['CMD-SHELL', 'pg_isready -U bot_user -d discord_bot']
+                interval: 10s
+                timeout: 5s
+                retries: 5
+              networks:
+                - discord_bot_network
 
-           volumes:
-             postgres_data_prod:
-               driver: local
+          volumes:
+            postgres_data_prod:
+              driver: local
 
-           networks:
-             discord_bot_network:
-               driver: bridge
-           DOCKER_COMPOSE_EOF
+          networks:
+            discord_bot_network:
+              driver: bridge
+          DOCKER_COMPOSE_EOF
 
           cd ~/discord-bot-prod
 
@@ -235,13 +229,3 @@ jobs:
 
           echo "Deployment completed successfully!"
           EOF
-
-#      - name: Notify on failure
-#        if: failure()
-#        uses: 8398a7/action-slack@v3
-#        with:
-#          status: ${{ job.status }}
-#          channel: '#deployments'
-#          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-#        env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
