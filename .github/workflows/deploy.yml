@@ -101,11 +101,11 @@ jobs:
             NODE_ENV=production
           no-cache: true
 
-      - name: Test Docker image
-        run: |
-          # Pull the image to verify it works
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main --version || echo "Docker image test completed"
+       - name: Test Docker image
+         run: |
+           # Pull the image to verify it works
+           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main --version || echo "Docker image test completed"
 
        - name: Deploy to production
          if: github.ref == 'refs/heads/main'
