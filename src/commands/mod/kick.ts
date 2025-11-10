@@ -1,4 +1,4 @@
-import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
 
 import { command } from '../../tools/Command'
 
@@ -15,7 +15,7 @@ export default command({
     const start = new Date(`${datestr}T00:00:00.000Z`)
     const end = new Date(`${datestr}T23:59:59.999Z`)
 
-    await interaction.deferReply({ ephemeral: true })
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
     const members = await interaction.guild!.members.fetch()
     const toKick = members.filter((m) => m.joinedAt! && m.joinedAt >= start && m.joinedAt <= end)

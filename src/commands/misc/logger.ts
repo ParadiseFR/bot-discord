@@ -1,4 +1,4 @@
-import { Guild, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
+import { Guild, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
 
 import { command, GuildSettings, Text } from '../../tools'
 
@@ -15,7 +15,7 @@ export default command({
   meta,
   cooldown: 3,
   execute: async ({ interaction }) => {
-    await interaction.deferReply({ ephemeral: true })
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
     const channel = interaction.options.getChannel('salon', true)
     GuildSettings.update(interaction.guild as Guild, { LOGS: { LOG_CHANNEL_ID: channel.id } })

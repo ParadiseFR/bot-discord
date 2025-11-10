@@ -7,6 +7,11 @@
     "dev": "NODE_ENV=development tsx watch --clear-screen src/app.ts",
     "build": "swc src -d dist",
     "start": "NODE_ENV=production node dist/src/app.js",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx src/database/seed.ts",
+    "db:reset": "prisma db push --force-reset && bun run db:seed",
     "lint:typescript": "eslint \"**/*.ts\" --ignore-path \".gitignore\" && tsc --noemit",
     "lint:prettier": "prettier \".\" --check --ignore-unknown '!**/*.yml' --ignore-path \".gitignore\""
   },
@@ -14,6 +19,7 @@
     "@discordjs/voice": "^0.17.0",
     "@distube/ytdl-core": "latest",
     "@napi-rs/canvas": "^0.1.78",
+    "@prisma/client": "^5.7.1",
     "date-fns": "^4.1.0",
     "discord.js": "^14.12.1",
     "dotenv": "^16.3.1",
@@ -41,6 +47,7 @@
     "@swc/core": "^1.13.5",
     "eslint": "8.46.0",
     "prettier": "3.0.1",
+    "prisma": "^5.7.1",
     "tsx": "^4.20.5",
     "typescript": "5.1.6"
   },

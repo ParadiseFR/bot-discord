@@ -40,7 +40,7 @@ export class RypiBot {
     Logger.log('Bot initiated successfully')
 
     this.client
-      .login(process.env.TOKEN)
+      .login(process.env.DISCORD_TOKEN)
       .then((): void => Logger.log('Connection established successfully'))
       .catch((error): void => Logger.error(error))
       // TODO: execute finally only if no error has been catched
@@ -103,7 +103,7 @@ export class RypiBot {
     return member as GuildMember
   }
 
-  public async updateMemberCount(guild: Guild): Promise<void> {
+  public async updateMemberCount(guild: Guild): Promise<boolean> {
     try {
       const count = await this.membersCount(guild)
       const voiceChannel = (await this.findOrCreateMemberCounterChannel(guild)) as VoiceBasedChannel
@@ -112,9 +112,13 @@ export class RypiBot {
       if (voiceChannel.name !== newChannelName) {
         await voiceChannel.setName(newChannelName)
         Logger.log(`Updated members count channel name to: ${newChannelName}`)
+        return true
       }
+
+      return false
     } catch (error) {
       Logger.error('Error updating member count:', error)
+      return false
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Collection, Events, Guild } from 'discord.js'
+import { Collection, Events, Guild, MessageFlags } from 'discord.js'
 
 import { Logger, MissingPermissionsExceptionError, checkPermissions, event } from '../../tools'
 import { BOT_INSTANCE } from '../../app'
@@ -24,7 +24,7 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
           // TODO: change content message
           await interaction.reply({
             content: `cooldown bitch, time: ${timeLeft.toFixed(1)}, name: ${interaction.commandName}`,
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
           })
 
           return interaction.guild as Guild
@@ -51,10 +51,13 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
         Logger.error(error)
 
         if (Boolean(error.message.includes('permissions'))) {
-          interaction.reply({ content: error.toString(), ephemeral: true }).catch(Logger.error)
+          interaction.reply({ content: error.toString(), flags: MessageFlags.Ephemeral }).catch(Logger.error)
         } else {
           interaction
-            .reply({ content: "Une erreur s'est produite lors de l'exécution de cette commande.", ephemeral: true })
+            .reply({
+              content: "Une erreur s'est produite lors de l'exécution de cette commande.",
+              flags: MessageFlags.Ephemeral
+            })
             .catch(Logger.error)
         }
       }

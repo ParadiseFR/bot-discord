@@ -13,7 +13,7 @@ export const category: CommandCategoryHandler = (props) => {
 }
 
 export const registerCommands = async (client: Client<true>, commands: CommandCategory[]): Promise<void> => {
-  const rest = new REST().setToken(String(process.env.TOKEN))
+  const rest = new REST().setToken(String(process.env.DISCORD_TOKEN))
 
   const categoryCommands = commands.map((category): Command[] => category.commands).flat()
   const endpoint =

@@ -33,7 +33,7 @@ export const registerEvents = (client: Client<true>, events: Array<Event<any>>):
 
             if (guild != null) {
               Logger.guildEvent(guild, `Event ${eventName} dispatched (${handlers.length} handlers)`)
-            }
+            } else Logger.events(`Event ${eventName} dispatched to all servers`)
           }
         }
       } catch (error) {

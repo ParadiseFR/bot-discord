@@ -13,6 +13,7 @@ import {
   GuildBasedChannel,
   GuildMember,
   MessageActionRowComponentBuilder,
+  MessageFlags,
   OverwriteData,
   PermissionFlagsBits,
   StringSelectMenuBuilder,
@@ -143,7 +144,7 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
     switch (customId) {
       case 'TICKET_CREATE':
         if (channel != null && 'guild' in channel && guild != null && user != null) {
-          await interaction.deferReply({ ephemeral: true })
+          await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
           if (Boolean(guild?.members.me?.permissions.has(PermissionFlagsBits.ManageChannels))) {
             return await interaction.followUp('Cannot create ticket channel, missing `Manage Channel` permission')
@@ -272,7 +273,7 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
       case 'TICKET_CLOSE':
         if (channel != null && 'guild' in channel) {
           if (channel.type === ChannelType.GuildText) {
-            await interaction.deferReply({ ephemeral: true })
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
             const status = await closeTicket(channel, user)
 
@@ -287,4 +288,6 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
         break
     }
   }
+
+  return interaction.guild
 })

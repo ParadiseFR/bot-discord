@@ -8,7 +8,11 @@
 - 📊 Member Counter Channel
 - 👋 Custom welcome/goodbye embed messages
 
-## 🚀 Roadmap
+## 🚀 Setup
+
+Consider giving admin privileges to the bot once invited to the server.
+
+## 📝 Roadmap
 
 - [ ] Disable/enable team flow announcement
 - [ ] Add giveaways 🎁

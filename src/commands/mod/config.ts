@@ -1,4 +1,4 @@
-import { ChannelType, Guild, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
+import { ChannelType, Guild, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
 
 import { GuildSettings, Text, command } from '../../tools'
 
@@ -40,7 +40,7 @@ export default command({
   meta,
   cooldown: 2,
   execute: async ({ interaction }) => {
-    await interaction.deferReply({ ephemeral: true })
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
     const subcommandGroup = interaction.options.getSubcommandGroup()
     const subcommand = interaction.options.getSubcommand(true)
