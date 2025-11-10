@@ -101,8 +101,8 @@ jobs:
       - name: Test Docker image
         run: |
           # Pull the image to verify it works
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} --version || echo "Docker image test completed"
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest --version || echo "Docker image test completed"
 
       - name: Deploy to production
         if: github.ref == 'refs/heads/dev'
