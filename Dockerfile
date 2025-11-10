@@ -21,6 +21,9 @@ RUN bun run db:generate
 # Build the project using SWC
 RUN bun run build
 
+# Verify build output
+RUN ls -la /app/dist/
+
 # Stage 2: Production runtime
 FROM oven/bun:latest AS runtime
 
