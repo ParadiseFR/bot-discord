@@ -30,6 +30,7 @@ export default event(Events.ChannelUpdate, async ({ client }, oldChannel, newCha
 
         try {
           await logChannel.send({ embeds: [embed] })
+          return logChannel.guild
         } catch (error) {
           Logger.error('Error sending channel update log message:', error)
         }

@@ -15,9 +15,10 @@ import { google } from 'googleapis'
 
 import type { Command } from './types'
 import { ASSETS_DIR, Config, Logger, MusicQueue, ROOT_DIR, registerEvents } from './tools'
+import { GuildSettings } from './tools/Guild'
 import events from './events'
 
-export class RypiBot {
+export class Bot {
   public readonly prefix = Config.PREFIX
   public slashCommands = new Collection<string, Command>()
   public cooldowns = new Collection<string, Collection<Snowflake, number>>()
@@ -42,7 +43,10 @@ export class RypiBot {
     this.client
       .login(process.env.DISCORD_TOKEN)
       .then((): void => Logger.log('Connection established successfully'))
-      .catch((error): void => Logger.error(error))
+      .catch((error): void => {
+        Logger.error(error)
+        return process.exit(1)
+      })
       // TODO: execute finally only if no error has been catched
       .finally((): void => {
         this.client.on(Events.Warn, (warning): void => Logger.warn(warning))
@@ -52,33 +56,35 @@ export class RypiBot {
       })
   }
 
-  public async findOrCreateMemberCounterChannel(guild: Guild): Promise<VoiceBasedChannel | undefined> {
+  public async findOrCreateMemberCounterChannel(guild: Guild, count: number): Promise<VoiceBasedChannel | undefined> {
     try {
-      const voiceChannels = guild.channels.cache.filter(
-        (channel): boolean => channel.type === ChannelType.GuildVoice
-      ) as Collection<Snowflake, VoiceBasedChannel>
+      const { MEMBER_COUNTER_CHANNEL_ID: channelId } = GuildSettings.get(guild)
 
-      const pattern = new RegExp(`^${Config.MEMBER_COUNTER_PATTERN.replace(/{count}/g, '\\d+')}$`)
-      const existingChannel = voiceChannels.find((channel): boolean => pattern.test(channel.name))
+      if (channelId.length > 0) {
+        const existingChannel = guild.channels.cache.get(channelId)
+        if (existingChannel != null && existingChannel.type === ChannelType.GuildVoice) {
+          return existingChannel as VoiceBasedChannel
+        }
+      }
 
-      if (existingChannel == null) {
-        const count = await this.membersCount(guild)
-        const channelName = Config.MEMBER_COUNTER_PATTERN.replace(/{count}/, count.toString())
+      console.log(channelId)
 
-        const channel = await guild.channels.create({
-          name: channelName,
-          type: ChannelType.GuildVoice,
-          reason: 'Member counter channel',
-          permissionOverwrites: [
-            {
-              id: guild.roles.everyone.id,
-              deny: [PermissionFlagsBits.Connect]
-            }
-          ]
-        })
+      const channelName = `Members: ${count}`
+      const channel = await guild.channels.create({
+        name: channelName,
+        type: ChannelType.GuildVoice,
+        reason: 'Member counter channel',
+        permissionOverwrites: [
+          {
+            id: guild.roles.everyone.id,
+            deny: [PermissionFlagsBits.Connect]
+          }
+        ]
+      })
 
-        return channel
-      } else return existingChannel
+      GuildSettings.update(guild, { MEMBER_COUNTER_CHANNEL_ID: channel.id })
+
+      return channel
     } catch (error) {
       Logger.error('Error finding or creating member counter channel:', error)
     }
@@ -106,12 +112,20 @@ export class RypiBot {
   public async updateMemberCount(guild: Guild): Promise<boolean> {
     try {
       const count = await this.membersCount(guild)
-      const voiceChannel = (await this.findOrCreateMemberCounterChannel(guild)) as VoiceBasedChannel
-      const newChannelName = Config.MEMBER_COUNTER_PATTERN.replace(/{count}/, count.toString())
+      const voiceChannel = (await this.findOrCreateMemberCounterChannel(guild, count)) as VoiceBasedChannel
+      const newChannelName = `Members: ${count}`
+      const match = voiceChannel.name.match(/(\d+)/)
 
-      if (voiceChannel.name !== newChannelName) {
+      if (match != null) {
+        const updatedName = voiceChannel.name.replace(/\d+/, count.toString())
+        if (updatedName !== voiceChannel.name) {
+          await voiceChannel.setName(updatedName)
+          Logger.guildEvent(guild, `Updated members count channel name to: ${updatedName}`)
+          return true
+        }
+      } else {
         await voiceChannel.setName(newChannelName)
-        Logger.log(`Updated members count channel name to: ${newChannelName}`)
+        Logger.guildEvent(guild, `Updated members count channel name to: ${newChannelName}`)
         return true
       }
 

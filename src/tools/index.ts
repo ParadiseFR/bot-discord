@@ -12,3 +12,4 @@ export * from './HttpUtils'
 export * from './FixedSizeMap'
 export * from './AutoMod'
 export * from '../database'
+export * from "./Randomizer"

@@ -5,7 +5,7 @@ import { fr } from 'date-fns/locale'
 import { Canvas, GuildSettings, Logger, event } from '../../tools'
 import { BOT_INSTANCE } from '../../app'
 
-export default event(Events.GuildMemberAdd, async (_, partialMember) => {
+export default event(Events.GuildMemberRemove, async (_, partialMember) => {
   const member = await BOT_INSTANCE.refinePartialMember(partialMember)
 
   if (!member.user.bot) {

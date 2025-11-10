@@ -17,3 +17,4 @@ Consider giving admin privileges to the bot once invited to the server.
 - [ ] Disable/enable team flow announcement
 - [ ] Add giveaways 🎁
 - [ ] Add i18n 🌎
+- [ ] Solve redundunt issues Error: getaddrinfo EAI_AGAIN discord.com + AggregateError

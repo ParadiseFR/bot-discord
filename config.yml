@@ -1,19 +1,4 @@
-# Config
-
-PREFIX: 🤖 Rypîbot
-
-# EVENTS
-
-LISTEN_ROLE_IDS: [
-    '1243999914753523835', # développeur
-    '1243999629767475293',
-    '1384937949984194601',
-    '1384944179863359618',
-    '1384943079311671406',
-    '1384943261357047939',
-    '1384943821716197418'
-  ]
-
-# STATISTIQUES
-
-MEMBER_COUNTER_PATTERN: 'Membres: {count}'
+PREFIX: 🏝️ ParadiseFR
+MOODS_LIST:
+  - Habbo 🤔 ? Le rétro de toute les temps 😎
+  - Viens sur ParadiseFR pour des moments de joie et de folie 🎇

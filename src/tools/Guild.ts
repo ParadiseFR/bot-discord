@@ -69,7 +69,8 @@ const guildschema = z.object({
   LOGS: logsSchema.optional().default({}),
   TICKET: ticketSchema.optional().default({}),
   MUSIC: musicSchema.optional().default({}),
-  AUTOMOD: autoMod.optional().default({})
+  AUTOMOD: autoMod.optional().default({}),
+  MEMBER_COUNTER_CHANNEL_ID: snowflakeOrEmpty.optional().default('')
 })
 
 type schemaType = z.infer<typeof guildschema>

@@ -1,7 +1,7 @@
 {
-  "name": "@rypi/discord-bot",
+  "name": "bot-discord",
   "version": "0.0.0",
-  "description": "🤖 Discord bot for Rypî Discord Community",
+  "description": "🤖 Multi-functionnal Discord Bot",
   "main": "dist/app.js",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch --clear-screen src/app.ts",
@@ -11,6 +11,7 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "tsx src/database/seed.ts",
+    "postinstall": "prisma generate",
     "db:reset": "prisma db push --force-reset && bun run db:seed",
     "lint:typescript": "eslint \"**/*.ts\" --ignore-path \".gitignore\" && tsc --noemit",
     "lint:prettier": "prettier \".\" --check --ignore-unknown '!**/*.yml' --ignore-path \".gitignore\""
@@ -67,5 +68,8 @@
     "rules": {
       "@typescript-eslint/consistent-type-imports": "off"
     }
-  }
+  },
+  "trustedDependencies": [
+    "@swc/core"
+  ]
 }

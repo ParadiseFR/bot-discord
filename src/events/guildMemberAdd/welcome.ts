@@ -29,11 +29,13 @@ export default event(Events.GuildMemberAdd, async (_, member) => {
           embeds: [embed],
           files: [{ attachment, name: 'welcome.png' }]
         })
+
+        return channel.guild
       } catch (error) {
         Logger.error('Error sending member join log message:', error)
       }
     } else {
-      return Logger.error('Log channel not found or is not a text channel!')
+      Logger.error('Log channel not found or is not a text channel!')
     }
   }
 })

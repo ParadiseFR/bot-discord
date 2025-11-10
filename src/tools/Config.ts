@@ -15,10 +15,7 @@ export const ASSETS_DIR = (asset: string): string => {
 
 const ConfigSchema = z.strictObject({
   PREFIX: z.string(),
-
-  LISTEN_ROLE_IDS: z.array(z.string()),
-
-  MEMBER_COUNTER_PATTERN: z.string()
+  MOODS_LIST: z.array(z.strign())
 })
 
 const configPath = load(readFileSync(`${ROOT_DIR()}/config.yml`, 'utf8'))
