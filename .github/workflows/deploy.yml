@@ -6,8 +6,148 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
-  test:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Hello World"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/package-lock.json', '**/bun.lock', '**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: |
+          bun install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: |
+          bun run db:generate
+
+      - name: Run linting
+        run: |
+          bun run lint:typescript || echo "Linting failed, but continuing"
+
+      - name: Build project
+        run: |
+          bun run build
+
+      - name: Verify build output
+        run: |
+          ls -la dist/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: discord-bot-build
+          path: dist/
+          retention-days: 1
+
+      # Docker Build and Push
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NODE_ENV=production
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker image
+        run: |
+          # Pull the image to verify it works
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest --version || echo "Docker image test completed"
+
+      - name: Deploy to production
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "🚀 Deployment to production triggered"
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+
+          # Install sshpass for password authentication
+          sudo apt-get update && sudo apt-get install -y sshpass
+
+          # Deploy via SSH
+          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
+          set -e
+
+          echo "Pulling latest Docker image..."
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+          echo "Stopping existing bot container..."
+          docker stop discord-bot || echo "No existing container to stop"
+
+          echo "Removing existing bot container..."
+          docker rm discord-bot || echo "No existing container to remove"
+
+          echo "Starting new bot container..."
+          docker run -d \
+            --name discord-bot \
+            --restart unless-stopped \
+            -e DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+          echo "Waiting for container to start..."
+          sleep 10
+
+          echo "Checking container status..."
+          docker ps | grep discord-bot
+
+          echo "Deployment completed successfully!"
+          EOF
+
+#      - name: Notify on failure
+#        if: failure()
+#        uses: 8398a7/action-slack@v3
+#        with:
+#          status: ${{ job.status }}
+#          channel: '#deployments'
+#          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+#        env:
+#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

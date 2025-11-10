@@ -60,4 +60,4 @@ ENV PORT=3000
 EXPOSE 3000
 
 # Start the application
-CMD ["node", "dist/src/app.js"]
+CMD ["bun", "dist/src/app.js"]
