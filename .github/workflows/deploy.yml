@@ -113,30 +113,12 @@ jobs:
           # For example: kubectl set image, docker-compose up -d, etc.
           # Or use GitHub Deployments API for external deployments
 
-      - name: Create deployment status
-        if: github.ref == 'refs/heads/dev'
-        uses: peter-evans/create-or-update-deployment@v3
-        with:
-          environment: production
-          ref: ${{ github.ref }}
-          sha: ${{ github.sha }}
-          state: in_progress
-
-      - name: Update deployment status
-        if: always() && github.ref == 'refs/heads/dev'
-        uses: peter-evans/create-or-update-deployment@v3
-        with:
-          environment: production
-          ref: ${{ github.ref }}
-          sha: ${{ github.sha }}
-          state: ${{ job.status == 'success' && 'success' || 'failure' }}
-
-      - name: Notify on failure
-        if: failure()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          channel: '#deployments'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+#      - name: Notify on failure
+#        if: failure()
+#        uses: 8398a7/action-slack@v3
+#        with:
+#          status: ${{ job.status }}
+#          channel: '#deployments'
+#          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+#        env:
+#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
