@@ -133,7 +133,7 @@ jobs:
           fi
 
           echo "Checking if Docker Compose is installed..."
-          if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
+          if ! command -v docker compose version &> /dev/null; then
               echo "Docker Compose not found. Installing Docker Compose..."
               sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
               sudo chmod +x /usr/local/bin/docker-compose
@@ -210,22 +210,22 @@ jobs:
           cd ~/discord-bot-prod
 
           echo "Pulling latest images..."
-          docker-compose -f docker-compose.prod.yml pull
+          docker compose -f docker-compose.prod.yml pull
 
           echo "Stopping existing services..."
-          docker-compose -f docker-compose.prod.yml down || echo "No existing services to stop"
+          docker compose -f docker-compose.prod.yml down || echo "No existing services to stop"
 
           echo "Starting services..."
-          docker-compose -f docker-compose.prod.yml up -d
+          docker compose -f docker-compose.prod.yml up -d
 
           echo "Waiting for services to start..."
           sleep 30
 
           echo "Checking service status..."
-          docker-compose -f docker-compose.prod.yml ps
+          docker compose -f docker-compose.prod.yml ps
 
           echo "Checking bot container logs..."
-          docker-compose -f docker-compose.prod.yml logs discord-bot | tail -20
+          docker compose -f docker-compose.prod.yml logs discord-bot | tail -20
 
           echo "Deployment completed successfully!"
           EOF
