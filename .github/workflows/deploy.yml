@@ -3,7 +3,7 @@ name: Deploy Discord Bot
 on:
   push:
     branches:
-      - main
+      - dev
   workflow_dispatch:
 
 # Ensure only one deployment runs at a time
@@ -22,19 +22,9 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -74,7 +64,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: discord-bot-build-${{ matrix.node-version }}
+          name: discord-bot-build
           path: dist/
           retention-days: 1
 
@@ -109,12 +99,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BUILDKIT_INLINE_CACHE=1
+            NODE_ENV=production
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          # Use build args for runtime configuration
-          build-args: |
-            NODE_ENV=production
 
       - name: Test Docker image
         run: |
@@ -123,16 +110,16 @@ jobs:
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} --version || echo "Docker image test completed"
 
       - name: Deploy to production
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/dev'
         run: |
           echo "🚀 Deployment to production triggered"
           echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
           # Add your deployment commands here
           # For example: kubectl set image, docker-compose up -d, etc.
           # Or use GitHub Deployments API for external deployments
-          
+
       - name: Create deployment status
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/dev'
         uses: peter-evans/create-or-update-deployment@v3
         with:
           environment: production
@@ -141,7 +128,7 @@ jobs:
           state: in_progress
 
       - name: Update deployment status
-        if: always() && github.ref == 'refs/heads/main'
+        if: always() && github.ref == 'refs/heads/dev'
         uses: peter-evans/create-or-update-deployment@v3
         with:
           environment: production
@@ -158,4 +145,3 @@ jobs:
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: always()
