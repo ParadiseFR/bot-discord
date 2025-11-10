@@ -104,8 +104,8 @@ jobs:
       - name: Test Docker image
         run: |
           # Pull the image to verify it works
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest --version || echo "Docker image test completed"
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main --version || echo "Docker image test completed"
 
       - name: Deploy to production
         if: github.ref == 'refs/heads/main'
@@ -120,21 +120,21 @@ jobs:
           sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
           set -e
 
-          echo "Pulling latest Docker image..."
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+           echo "Pulling latest Docker image..."
+           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
 
-          echo "Stopping existing bot container..."
-          docker stop discord-bot || echo "No existing container to stop"
+           echo "Stopping existing bot container..."
+           docker stop discord-bot || echo "No existing container to stop"
 
-          echo "Removing existing bot container..."
-          docker rm discord-bot || echo "No existing container to remove"
+           echo "Removing existing bot container..."
+           docker rm discord-bot || echo "No existing container to remove"
 
-          echo "Starting new bot container..."
-          docker run -d \
-            --name discord-bot \
-            --restart unless-stopped \
-            -e DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+           echo "Starting new bot container..."
+           docker run -d \
+             --name discord-bot \
+             --restart unless-stopped \
+             -e DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
+             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
 
           echo "Waiting for container to start..."
           sleep 10
