@@ -107,17 +107,23 @@ jobs:
           docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
           docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main --version || echo "Docker image test completed"
 
-      - name: Deploy to production
-        if: github.ref == 'refs/heads/main'
-        run: |
-          echo "🚀 Deployment to production triggered"
-          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+       - name: Deploy to production
+         if: github.ref == 'refs/heads/main'
+         run: |
+           echo "🚀 Deployment to production triggered"
+           echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
 
-          # Install sshpass for password authentication
-          sudo apt-get update && sudo apt-get install -y sshpass
+           # Install sshpass for password authentication
+           sudo apt-get update && sudo apt-get install -y sshpass
 
-          # Deploy via SSH
-          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
+           # Export secrets for use in SSH session
+           export IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main"
+           export DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}"
+           export GUILD_ID="${{ secrets.GUILD_ID }}"
+           export CLIENT_ID="${{ secrets.CLIENT_ID }}"
+
+           # Deploy via SSH
+           sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
           set -e
 
           echo "Checking if Docker is installed..."
@@ -144,24 +150,24 @@ jobs:
           echo "Creating production directory if it doesn't exist..."
           mkdir -p ~/discord-bot-prod
 
-          echo "Updating docker-compose.prod.yml..."
-          cat > ~/discord-bot-prod/docker-compose.prod.yml << 'DOCKER_COMPOSE_EOF'
-          services:
-            discord-bot:
-              image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
-              container_name: discord_bot_prod
-              restart: unless-stopped
-              environment:
-                - NODE_ENV=production
-                - DATABASE_URL=postgresql://bot_user:bot_password@postgres:5432/discord_bot
-                - DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}"
-                - GUILD_ID="${{ secrets.GUILD_ID }}"
-                - CLIENT_ID="${{ secrets.CLIENT_ID }}"
-                - DATABASE_HOST=postgres
-                - DATABASE_PORT=5432
-                - DATABASE_NAME=discord_bot
-                - DATABASE_USER=bot_user
-                - DATABASE_PASSWORD=bot_password
+           echo "Updating docker-compose.prod.yml..."
+           cat > ~/discord-bot-prod/docker-compose.prod.yml << DOCKER_COMPOSE_EOF
+           services:
+             discord-bot:
+               image: $IMAGE_TAG
+               container_name: discord_bot_prod
+               restart: unless-stopped
+               environment:
+                 - NODE_ENV=production
+                 - DATABASE_URL=postgresql://bot_user:bot_password@postgres:5432/discord_bot
+                 - DISCORD_TOKEN="$DISCORD_TOKEN"
+                 - GUILD_ID="$GUILD_ID"
+                 - CLIENT_ID="$CLIENT_ID"
+                 - DATABASE_HOST=postgres
+                 - DATABASE_PORT=5432
+                 - DATABASE_NAME=discord_bot
+                 - DATABASE_USER=bot_user
+                 - DATABASE_PASSWORD=bot_password
               volumes:
                 - ./logs:/app/logs
                 - ./config:/app/config
