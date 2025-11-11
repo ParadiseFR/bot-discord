@@ -62,8 +62,8 @@ jobs:
           # Ensure remote directory exists
           ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} "mkdir -p ~/discord-bot"
 
-          # Copy compose file to VPS
-          scp -i ~/.ssh/deploy_key compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}:~/discord-bot/
+          # Copy necessary files to VPS
+          scp -i ~/.ssh/deploy_key compose.yml config.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}:~/discord-bot/
 
           ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
             cd ~/discord-bot
