@@ -6,68 +6,30 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
 permissions:
   contents: read
   packages: write
 
 env:
   REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/bot-discord
 
 jobs:
-  build-and-deploy:
+  deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: Set image name
-        run: |
-          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          echo "IMAGE_NAME=${OWNER}/bot-discord" >> $GITHUB_ENV
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Cache bun dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.bun/install/cache
-            node_modules
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/package-lock.json', '**/bun.lock', '**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
-
-      - name: Install dependencies
-        run: |
-          bun install --frozen-lockfile
-
-      - name: Generate Prisma client
-        run: |
-          bun run db:generate
-
-      - name: Run linting
-        run: |
-          bun run lint:typescript || echo "Linting failed, but continuing"
-
-      - name: Build project
-        run: |
-          bun run build
-
-      - name: Verify build output
-        run: |
-          ls -la dist/
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: discord-bot-build
-          path: dist/
-          retention-days: 1
-
-      # Docker Build and Push
       - name: Log in to Container Registry
         uses: docker/login-action@v3
         with:
@@ -75,160 +37,37 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            NODE_ENV=production
-          no-cache: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Test Docker image
+      - name: Deploy to VPS
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         run: |
-          # Pull the image to verify it works
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
-          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main --version || echo "Docker image test completed"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to production
-        if: github.ref == 'refs/heads/main'
-        run: |
-          echo "🚀 Deployment to production triggered"
-          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          scp -i ~/.ssh/deploy_key compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}:~/discord-bot/
 
-          # Install sshpass for password authentication
-          sudo apt-get update && sudo apt-get install -y sshpass
-
-          # Deploy via SSH
-          sshpass -p "${{ secrets.VPS_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
-          set -e
-
-          echo "Checking if Docker is installed..."
-          if ! command -v docker &> /dev/null; then
-              echo "Docker not found. Installing Docker..."
-              curl -fsSL https://get.docker.com -o get-docker.sh
-              sudo sh get-docker.sh
-              sudo systemctl start docker
-              sudo systemctl enable docker
-              sudo usermod -aG docker $USER
-          else
-              echo "Docker is already installed"
-          fi
-
-          echo "Checking if Docker Compose is installed..."
-          if ! command -v docker compose version &> /dev/null; then
-              echo "Docker Compose not found. Installing Docker Compose..."
-              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
-          else
-              echo "Docker Compose is already installed"
-          fi
-
-          echo "Creating production directory if it doesn't exist..."
-          mkdir -p ~/discord-bot-prod
-
-          echo "Updating docker-compose.prod.yml..."
-          cat > ~/discord-bot-prod/docker-compose.prod.yml << 'DOCKER_COMPOSE_EOF'
-          services:
-            discord-bot:
-              image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
-              container_name: discord_bot_prod
-              restart: unless-stopped
-              environment:
-                - NODE_ENV=production
-                - DATABASE_URL=postgresql://bot_user:bot_password@postgres:5432/discord_bot
-                - DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}"
-                - GUILD_ID="${{ secrets.GUILD_ID }}"
-                - CLIENT_ID="${{ secrets.CLIENT_ID }}"
-                - DATABASE_HOST=postgres
-                - DATABASE_PORT=5432
-                - DATABASE_NAME=discord_bot
-                - DATABASE_USER=bot_user
-                - DATABASE_PASSWORD=bot_password
-              volumes:
-                - ./logs:/app/logs
-                - ./config:/app/config
-              depends_on:
-                postgres:
-                  condition: service_healthy
-              networks:
-                - discord_bot_network
-              healthcheck:
-                test: ['CMD', 'node', '--version']
-                interval: 30s
-                timeout: 10s
-                retries: 3
-                start_period: 40s
-
-            postgres:
-              image: postgres:15-alpine
-              container_name: discord_bot_db_prod
-              restart: unless-stopped
-              environment:
-                POSTGRES_DB: discord_bot
-                POSTGRES_USER: bot_user
-                POSTGRES_PASSWORD: bot_password
-                POSTGRES_INITDB_ARGS: '--encoding=UTF8 --lc-collate=C --lc-ctype=C'
-              volumes:
-                - postgres_data_prod:/var/lib/postgresql/data
-              ports:
-                - '5432:5432'
-              healthcheck:
-                test: ['CMD-SHELL', 'pg_isready -U bot_user -d discord_bot']
-                interval: 10s
-                timeout: 5s
-                retries: 5
-              networks:
-                - discord_bot_network
-
-          volumes:
-            postgres_data_prod:
-              driver: local
-
-          networks:
-            discord_bot_network:
-              driver: bridge
-          DOCKER_COMPOSE_EOF
-
-           cd ~/discord-bot-prod
-
-           echo "Logging in to GitHub Container Registry..."
-           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-           echo "Pulling latest images..."
-           docker compose -f docker-compose.prod.yml pull
-
-          echo "Stopping existing services..."
-          docker compose -f docker-compose.prod.yml down || echo "No existing services to stop"
-
-          echo "Starting services..."
-          docker compose -f docker-compose.prod.yml up -d
-
-          echo "Waiting for services to start..."
-          sleep 30
-
-          echo "Checking service status..."
-          docker compose -f docker-compose.prod.yml ps
-
-          echo "Checking bot container logs..."
-          docker compose -f docker-compose.prod.yml logs discord-bot | tail -20
-
-          echo "Deployment completed successfully!"
+          ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
+            cd ~/discord-bot
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            export IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            export DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
+            export GUILD_ID=${{ secrets.TEST_GUILD_ID }}
+            export CLIENT_ID=${{ secrets.CLIENT_ID }}
+            
+            docker compose pull
+            docker compose up -d --force-recreate
+            docker compose ps
           EOF
