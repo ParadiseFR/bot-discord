@@ -16,6 +16,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/bot-discord
 
 jobs:
   deploy:
@@ -23,13 +24,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-       - name: Checkout repository
-         uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-       - name: Set image name
-         run: echo "IMAGE_NAME=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')/bot-discord" >> $GITHUB_ENV
-
-       - name: Set up Docker Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Container Registry
