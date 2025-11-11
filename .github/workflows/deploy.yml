@@ -65,19 +65,17 @@ jobs:
           # Copy necessary files to VPS
           scp -i ~/.ssh/deploy_key compose.yml config.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}:~/discord-bot/
 
-          ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
+          ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} bash -s << 'EOF'
             cd ~/discord-bot
             
             # Login to container registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Create .env file with environment variables
-            cat > .env << 'ENVEOF'
-            IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
-            GUILD_ID=${{ secrets.TEST_GUILD_ID }}
-            CLIENT_ID=${{ secrets.CLIENT_ID }}
-            ENVEOF
+            echo "IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" > .env
+            echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> .env
+            echo "GUILD_ID=${{ secrets.TEST_GUILD_ID }}" >> .env
+            echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> .env
             
             # Pull and deploy
             echo "Pulling latest image..."
