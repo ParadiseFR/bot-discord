@@ -21,9 +21,7 @@ services:
       - discord_bot_network
 
   discord-bot:
-    build:
-      context: .
-      target: production
+    image: ${IMAGE:-ghcr.io/retro/bot-discord:latest}
     container_name: discord_bot
     restart: unless-stopped
     environment:
