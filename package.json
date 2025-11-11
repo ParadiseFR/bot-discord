@@ -30,7 +30,6 @@
     "js-yaml": "^4.1.0",
     "play-dl": "^1.9.7",
     "soundcloud-downloader": "^0.2.3",
-    "undici": "^5.28.4",
     "youtube-sr": "^4.3.0",
     "zod": "^3.21.4"
   },
