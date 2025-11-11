@@ -53,6 +53,7 @@ jobs:
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         run: |
+          # Setup SSH environment
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
@@ -62,14 +63,26 @@ jobs:
 
           ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
             cd ~/discord-bot
+            
+            # Login to container registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
+            # Set environment variables
             export IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             export DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
             export GUILD_ID=${{ secrets.TEST_GUILD_ID }}
             export CLIENT_ID=${{ secrets.CLIENT_ID }}
             
+            # Pull and deploy
+            echo "Pulling latest image..."
             docker compose pull
+            
+            echo "Starting containers..."
             docker compose up -d --force-recreate
+            
+            echo "Container status:"
             docker compose ps
+            
+            echo "Container logs (last 20 lines):"
+            docker compose logs --tail=20
           EOF
