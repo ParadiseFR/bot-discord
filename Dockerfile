@@ -35,7 +35,8 @@ RUN apk add --no-cache \
     ffmpeg \
     python3 \
     make \
-    g++
+    g++ \
+    openssl1.1-compat
 
 # Create app directory
 WORKDIR /app
@@ -54,10 +55,11 @@ COPY --from=builder /app/config.yml ./config.yml
 
 # Create non-root user for security
 RUN addgroup -S -g 1001 discord && \
-    adduser -S -u 1001 -G discord -s /bin/false -H discord
+    adduser -S -u 1001 -G discord -s /bin/sh discord
 
-# Change ownership of app directory
-RUN chown -R discord:discord /app
+# Create and set permissions for home and logs directories
+RUN mkdir -p /home/discord/.mybot /app/logs && \
+    chown -R discord:discord /app /home/discord
 
 # Switch to non-root user
 USER discord
