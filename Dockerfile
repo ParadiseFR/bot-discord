@@ -35,11 +35,16 @@ RUN apt-get update && apt-get install -y \
 # Create app directory
 WORKDIR /app
 
+# Copy package files and install fresh production dependencies
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/bun.lock* ./
+COPY --from=builder /app/prisma ./prisma
+
+# Install production dependencies fresh
+RUN bun install --frozen-lockfile --production
+
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/config.yml ./config.yml
 
 # Create non-root user for security
