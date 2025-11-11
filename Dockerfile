@@ -25,7 +25,7 @@ RUN bun run build
 RUN ls -la /app/dist/
 
 # Stage 2: Production runtime
-FROM oven/bun:latest AS runtime
+FROM oven/bun:latest AS production
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
