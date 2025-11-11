@@ -1,6 +1,6 @@
 # Multi-stage build for Discord bot
 # Stage 1: Build dependencies and compile TypeScript
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 
 # Install bun for building
 RUN npm install -g bun
@@ -28,15 +28,16 @@ RUN bun run build
 RUN ls -la /app/dist/
 
 # Stage 2: Production runtime
-FROM node:20-alpine AS production
+FROM node:20-slim AS production
 
 # Install runtime dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     ffmpeg \
     python3 \
     make \
     g++ \
-    openssl1.1-compat
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
 WORKDIR /app
@@ -54,11 +55,11 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/config.yml ./config.yml
 
 # Create non-root user for security
-RUN addgroup -S -g 1001 discord && \
-    adduser -S -u 1001 -G discord -s /bin/sh discord
+RUN groupadd --system --gid 1001 discord && \
+    useradd --system --uid 1001 --gid discord --shell /bin/bash --create-home discord
 
-# Create and set permissions for home and logs directories
-RUN mkdir -p /home/discord/.mybot /app/logs && \
+# Create and set permissions for logs directory
+RUN mkdir -p /app/logs /home/discord/.mybot && \
     chown -R discord:discord /app /home/discord
 
 # Switch to non-root user
