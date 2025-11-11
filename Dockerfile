@@ -1,6 +1,9 @@
 # Multi-stage build for Discord bot
 # Stage 1: Build dependencies and compile TypeScript
-FROM oven/bun:latest AS builder
+FROM node:20-alpine AS builder
+
+# Install bun for building
+RUN npm install -g bun
 
 # Set working directory
 WORKDIR /app
@@ -25,23 +28,25 @@ RUN bun run build
 RUN ls -la /app/dist/
 
 # Stage 2: Production runtime
-FROM oven/bun:latest AS production
+FROM node:20-alpine AS production
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+    python3 \
+    make \
+    g++
 
 # Create app directory
 WORKDIR /app
 
 # Copy package files and install fresh production dependencies
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/bun.lock* ./
+COPY --from=builder /app/package-lock.json* ./
 COPY --from=builder /app/prisma ./prisma
 
 # Install production dependencies fresh
-RUN bun install --frozen-lockfile --production
+RUN npm ci --omit=dev
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
@@ -69,4 +74,4 @@ ENV PORT=3000
 EXPOSE 3000
 
 # Start the application
-CMD ["bun", "dist/src/app.js"]
+CMD ["node", "dist/src/app.js"]
