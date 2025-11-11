@@ -53,8 +53,8 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/config.yml ./config.yml
 
 # Create non-root user for security
-RUN addgroup --system --gid 1001 discord && \
-    adduser --system --uid 1001 --gid 1001 --shell /bin/false discord
+RUN addgroup -S -g 1001 discord && \
+    adduser -S -u 1001 -G discord -s /bin/false -H discord
 
 # Change ownership of app directory
 RUN chown -R discord:discord /app
