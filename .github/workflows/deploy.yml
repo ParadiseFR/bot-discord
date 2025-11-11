@@ -71,11 +71,13 @@ jobs:
             # Login to container registry
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
-            # Set environment variables
-            export IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            export DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
-            export GUILD_ID=${{ secrets.TEST_GUILD_ID }}
-            export CLIENT_ID=${{ secrets.CLIENT_ID }}
+            # Create .env file with environment variables
+            cat > .env << 'ENVEOF'
+            IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}
+            GUILD_ID=${{ secrets.TEST_GUILD_ID }}
+            CLIENT_ID=${{ secrets.CLIENT_ID }}
+            ENVEOF
             
             # Pull and deploy
             echo "Pulling latest image..."
