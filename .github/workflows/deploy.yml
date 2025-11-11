@@ -68,8 +68,9 @@ jobs:
           ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} bash -s << 'EOF'
             cd ~/discord-bot
             
-            # Login to container registry
+            # Login to container registry (both as user and root for manual pulls)
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Create .env file with environment variables
             echo "IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" > .env
