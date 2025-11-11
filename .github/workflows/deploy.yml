@@ -59,6 +59,9 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
+          # Ensure remote directory exists
+          ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} "mkdir -p ~/discord-bot"
+
           scp -i ~/.ssh/deploy_key compose.yml ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }}:~/discord-bot/
 
           ssh -i ~/.ssh/deploy_key ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'EOF'
