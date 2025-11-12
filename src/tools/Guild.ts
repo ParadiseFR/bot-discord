@@ -1,19 +1,15 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
 
 import { Guild } from 'discord.js'
 import z, { ZodSchema } from 'zod'
 
 import { Logger } from './Logger'
 import { FixedSizeMap } from './FixedSizeMap'
+import { GUILDS_CONFIG_DIR, GUILDS_CONFIG_PATH } from './Config'
 
 type RecursivePartial<T> = {
   [P in keyof T]?: RecursivePartial<T[P]>
 }
-
-const CONFIG_DIR = `${homedir()}/.mybot`
-const CONFIG_PATH = join(CONFIG_DIR, 'guilds.json')
 
 const snowflakeOrEmpty = z.string().refine((val) => val === '' || /^\d{17,20}$/.test(val), {
   message: 'Invalid channel ID: must be empty string or a valid Discord snowflake (17-20 digits).'
@@ -87,14 +83,14 @@ class GuildSettingsManager {
 
   private load(): void {
     try {
-      if (!existsSync(CONFIG_DIR)) {
-        mkdirSync(CONFIG_DIR, { recursive: true })
+      if (!existsSync(GUILDS_CONFIG_DIR)) {
+        mkdirSync(GUILDS_CONFIG_DIR, { recursive: true })
       }
 
-      if (existsSync(CONFIG_PATH)) {
+      if (existsSync(GUILDS_CONFIG_PATH)) {
         let rawData: unknown
         try {
-          rawData = JSON.parse(readFileSync(CONFIG_PATH, 'utf8'))
+          rawData = JSON.parse(readFileSync(GUILDS_CONFIG_PATH, 'utf8'))
         } catch (error) {
           Logger.error('Failed to parse guild config file:', error)
           return
@@ -135,7 +131,7 @@ class GuildSettingsManager {
   private save(): void {
     try {
       const data = Object.fromEntries(this._cache.entries())
-      writeFileSync(CONFIG_PATH, JSON.stringify(data, null, 2), 'utf8')
+      writeFileSync(GUILDS_CONFIG_PATH, JSON.stringify(data, null, 2), 'utf8')
     } catch (error) {
       Logger.error('Error saving guild config:', error)
     }
