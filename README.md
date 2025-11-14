@@ -1,5 +1,7 @@
 # ✨ Features
 
+Further docs can be found under [Wiki](https://github.com/ParadiseFR/bot-discord/wiki)'s page for better understanding of how the bot works.
+
 - 🛡️ Team flow announcement (when STAFF member roles changes)
 - 🎫 Ticket Tool Management System
 - 📜 Logging Event Member Actions (change name/leave/join, delete/modify message, connect/disconnect)
@@ -11,6 +13,10 @@
 ## 🚀 Setup
 
 Consider giving admin privileges to the bot once invited to the server.
+
+```bash
+cp .env.example .env
+```
 
 ## 📝 Roadmap
 
