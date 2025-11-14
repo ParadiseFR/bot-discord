@@ -8,26 +8,27 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: status-page
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v2
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
-    - name: Install dependencies
-      run: bun install --frozen-lockfile
+      - name: Install dependencies
+        run: |
+          cd status-page
+          bun install --frozen-lockfile
 
       - name: Build
-        run: npm run build
+        run: |
+          cd status-page
+          bun run build
 
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: dist
+          publish_dir: status-page/dist
