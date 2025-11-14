@@ -2,8 +2,15 @@ name: Deploy Status Page
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
     paths: ['status-page/**']
+  pull_request:
+    branches: [main]
+    paths: ['status-page/**']
+  workflow_dispatch:
+
+env:
+  VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
 jobs:
   build-and-deploy:
