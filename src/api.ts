@@ -2,31 +2,30 @@ import express, { Request, Response } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
+
 import { BOT_INSTANCE } from './app'
 
 const app = express()
-const PORT = process.env.API_PORT || 3000
+const PORT = process.env.API_PORT ?? 3000
 
-// Security middleware
 app.use(
   helmet({
-    contentSecurityPolicy: false // Disable CSP for API
+    contentSecurityPolicy: false
   })
 )
 
-// CORS configuration
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || '*', // In production, set to your GitHub Pages domain
+    // In production, set to your GitHub Pages domain
+    origin: process.env.CORS_ORIGIN ?? '*',
     methods: ['GET'],
     credentials: false
   })
 )
 
-// Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false
@@ -54,7 +53,7 @@ app.get('/stats', async (_req: Request, res: Response) => {
     const uptime = process.uptime() * 1000 // in milliseconds
 
     const stats = {
-      status: client.readyAt ? 'online' : 'offline',
+      status: client.readyAt != null ? 'online' : 'offline',
       uptime: Math.floor(uptime),
       guilds,
       users,
@@ -70,7 +69,7 @@ app.get('/stats', async (_req: Request, res: Response) => {
   }
 })
 
-export function startAPIServer() {
+export const startAPIServer = (): void => {
   app.listen(PORT, () => {
     console.log(`API server running on port ${PORT}`)
   })

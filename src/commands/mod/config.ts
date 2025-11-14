@@ -128,6 +128,7 @@ export default command({
         break
 
       case 'roles': {
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
         const roles = interaction.options.get('roles')?.value
           ? [interaction.options.getRole('roles', true).id]
           : interaction.options.data.filter((opt) => opt.name === 'roles').map((opt) => opt.role?.id)
