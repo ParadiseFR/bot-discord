@@ -31,7 +31,6 @@ import { Song } from './Song'
 import { BOT_INSTANCE } from '../app'
 import { Logger } from './Logger'
 import { GuildSettings } from './Guild'
-import { Text } from './Text'
 
 export const safeReply = async (
   interaction: CommandInteraction | ButtonInteraction,
@@ -43,8 +42,8 @@ export const safeReply = async (
     } else {
       await interaction.reply(content)
     }
-  } catch (error: any) {
-    Logger.error(error)
+  } catch (error) {
+    console.error(error)
   }
 }
 
@@ -140,7 +139,7 @@ export class MusicQueue {
     })
 
     this.player.on('error', async (error) => {
-      Logger.error(error.message)
+      console.error(error)
 
       if (this.loop && this.songs.length > 0) {
         this.songs.push(this.songs.shift() as Song)
@@ -170,7 +169,7 @@ export class MusicQueue {
 
     const { MUSIC } = GuildSettings.get(this.interaction.guild as Guild)
 
-    !MUSIC.PRUNING && this.textChannel.send("❌ File d'attente de musique terminée.").catch(Logger.error)
+    !MUSIC.PRUNING && this.textChannel.send("❌ File d'attente de musique terminée.").catch(console.error)
 
     if (this.waitTimeout !== null) return
 
@@ -242,17 +241,13 @@ export class MusicQueue {
     if (this.muted) {
       this.resource.volume?.setVolumeLogarithmic(0)
 
-      safeReply(
-        interaction,
-        `${Text.mention.user(interaction.user.displayName)} 🔇 a coupé le son de la musique !`
-      ).catch(Logger.error)
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      safeReply(interaction, `<@${interaction.user}> 🔇 a coupé le son de la musique !`).catch(console.error)
     } else {
       this.resource.volume?.setVolumeLogarithmic(this.volume / 100)
 
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      safeReply(interaction, `${Text.mention.user(interaction.user.id)} 🔊 a réactivé le son de la musique !`).catch(
-        Logger.error
-      )
+      safeReply(interaction, `<@${interaction.user}> 🔊 a réactivé le son de la musique !`).catch(console.error)
     }
   }
 
@@ -267,8 +262,8 @@ export class MusicQueue {
 
     safeReply(
       interaction,
-      `${Text.mention.user(interaction.user.id)} 🔊 a réduit le volume, le volume est maintenant de ${this.volume}%`
-    ).catch(Logger.error)
+      `<@${interaction.user.id}> 🔊 a réduit le volume, le volume est maintenant de ${this.volume}%`
+    ).catch(console.error)
   }
 
   private async handleIncreaseVolume(interaction: ButtonInteraction): Promise<void> {
@@ -282,8 +277,8 @@ export class MusicQueue {
 
     safeReply(
       interaction,
-      `${Text.mention.user(interaction.user.id)} 🔊 a augmenté le volume, le volume est maintenant de ${this.volume}%`
-    ).catch(Logger.error)
+      `<@${interaction.user.id}> 🔊 a augmenté le volume, le volume est maintenant de ${this.volume}%`
+    ).catch(console.error)
   }
 
   private async handleLoop(interaction: any): Promise<void> {
@@ -344,8 +339,8 @@ export class MusicQueue {
         content: song.startMessage(),
         components: this.createButtonRow()
       })
-    } catch (error: any) {
-      Logger.error(error)
+    } catch (error: unknown) {
+      console.error(error)
       if (error instanceof Error) this.textChannel.send(error.message).catch(Logger.error)
       return
     }
@@ -370,7 +365,7 @@ export class MusicQueue {
 
     collector.on('end', () => {
       // Remove the buttons when the song ends
-      playingMessage.edit({ components: [] }).catch(Logger.error)
+      playingMessage.edit({ components: [] }).catch(console.error)
 
       const { MUSIC } = GuildSettings.get(this.interaction.guild as Guild)
 

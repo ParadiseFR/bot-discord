@@ -14,7 +14,7 @@ export default event(Events.ChannelCreate, async (_, channel) => {
         if (overwrite.type === 0) {
           name = overwrite.id === channel.guild.id ? '@everyone' : Text.channel(overwrite.id)
         } else {
-          name = Text.mention.user(overwrite.id)
+          name = `<@${overwrite.id}>`
         }
 
         const allowed = overwrite.allow.toArray().map((p): string => `✅ ${p}`)

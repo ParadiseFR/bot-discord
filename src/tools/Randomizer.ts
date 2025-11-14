@@ -11,12 +11,10 @@ export class Randomizer {
     const result: T[] = Array.from({ length: count })
     let len = elements.length
     const taken: number[] = Array.from({ length: len })
-    let i = count
 
-    while (i > 0) {
-      i--
+    while (count--) {
       const x = this.getRandomNumber(len)
-      result[i] = elements[x in taken ? taken[x] : x]
+      result[count] = elements[x in taken ? taken[x] : x]
       taken[x] = --len in taken ? taken[len] : len
     }
 

@@ -3,8 +3,8 @@ import {
   PermissionFlagsBits,
   TextChannel,
   ThreadChannel,
-  type Message,
-  type Collection,
+  Message,
+  Collection,
   MessageFlags
 } from 'discord.js'
 
