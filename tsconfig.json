@@ -3,7 +3,7 @@
   "display": "Default config",
   "compilerOptions": {
     "target": "ESNext",
-    "module": "CommonJS",
+    "module": "ESNext",
     "lib": ["ESNext"],
     "composite": false,
     "declaration": true,
@@ -23,6 +23,7 @@
     "preserveWatchOutput": true,
     "allowJs": false,
     "strict": true,
+    "skipLibCheck": true,
     "importHelpers": true,
     "paths": {
       "*": ["./src"]

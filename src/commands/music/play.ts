@@ -1,10 +1,10 @@
-import { GuildMember, TextChannel, SlashCommandBuilder, MessageFlags } from 'discord.js'
-import { DiscordGatewayAdapterCreator, joinVoiceChannel } from '@discordjs/voice'
+import { type GuildMember, type TextChannel, SlashCommandBuilder, MessageFlags } from 'discord.js'
+import { type DiscordGatewayAdapterCreator, joinVoiceChannel } from '@discordjs/voice'
 
 import { command } from '../../tools/Command'
 import { Song } from '../../tools/Song'
 import { BOT_INSTANCE } from '../../app'
-import { Logger, MusicQueue } from '../../tools'
+import { Logger, MusicQueue, Text } from '../../tools'
 
 export const playlistPattern = /^.*(list=)([^#&?]*).*/
 
@@ -40,45 +40,52 @@ export default command({
         .catch(Logger.error)
     }
 
-    if (interaction.replied) await interaction.editReply('⏳ Loading...').catch(console.error)
+    if (interaction.replied) await interaction.editReply('⏳ Loading...').catch(Logger.error)
     else await interaction.reply('⏳ Loading...')
 
     // Start the playlist if playlist url was provided
     if (playlistPattern.test(url as string)) {
-      await interaction.editReply('🔗 Link is playlist').catch(console.error)
+      await interaction.editReply('🔗 Link is playlist').catch(Logger.error)
 
       return BOT_INSTANCE.slashCommands.get('playlist')?.execute({ interaction })
     }
 
     let song: Song
+    interface IError {
+      name: string
+    }
 
     try {
       song = await Song.from(url as string, url as string)
-    } catch (error: any) {
-      console.log(error)
-      if (error.name === 'NoResults')
+    } catch (error: unknown) {
+      const err = error as IError
+      if (err.name === 'NoResults')
         return await interaction
           .reply({ content: `Aucun résultat trouvé pour <${url}>`, flags: MessageFlags.Ephemeral })
-          .catch(console.error)
-      if (error.name === 'InvalidURL')
+          .catch(Logger.error)
+      if (err.name === 'InvalidURL')
         return await interaction
           .reply({ content: `URL Invalide pour <${url}>`, flags: MessageFlags.Ephemeral })
-          .catch(console.error)
+          .catch(Logger.error)
 
       if (interaction.replied)
-        return await interaction.editReply({ content: 'erruer commande mdr' }).catch(console.error)
+        return await interaction.editReply({ content: 'erruer commande mdr' }).catch(Logger.error)
       else
         return await interaction
           .reply({ content: 'erreur commande mdr', flags: MessageFlags.Ephemeral })
-          .catch(console.error)
+          .catch(Logger.error)
     }
 
     if (queue != null) {
       queue.enqueue(song)
 
       return await (interaction.channel as TextChannel)
-        .send({ content: `✅ **${song.title}** a été ajouté à la file d'attente par <@${interaction.user.id}>` })
-        .catch(console.error)
+        .send({
+          content: `✅ ${Text.bold(song.title)} a été ajouté à la file d'attente par ${Text.mention.user(
+            interaction.user.id
+          )}`
+        })
+        .catch(Logger.error)
     }
 
     const newQueue = new MusicQueue({
@@ -93,6 +100,6 @@ export default command({
 
     BOT_INSTANCE.queues.set(interaction.guild?.id as string, newQueue)
     newQueue.enqueue(song)
-    interaction.deleteReply().catch(console.error)
+    interaction.deleteReply().catch(Logger.error)
   }
 })

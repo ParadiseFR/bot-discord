@@ -1,0 +1,28 @@
+{
+  "welcome": {
+    "returning_title": "Welcome back",
+    "new_title": "Welcome",
+    "returning_description": "happy you're back",
+    "new_description": "we're glad to have you",
+    "embed_title": "{{title}} {{guild}} 🎉 !",
+    "embed_description": "Hey {{user}}, {{description}} among us!",
+    "canvas_text": "{{title}}, {{username}} !"
+  },
+  "goodbye": {
+    "embed_title": "{{username}} has left {{guild}}",
+    "embed_description": "Sad to see you go, {{user}}!",
+    "canvas_text": "Goodbye, {{username}}!",
+    "member_count": "We now have {{count}} members.",
+    "footer": "Had joined {{time}}"
+  },
+  "automod": {
+    "log_embed_description": "{{user}} committed an infraction in channel {{channel}}",
+    "reasons": {
+      "caps": "Excessive caps",
+      "censored": "Inappropriate words",
+      "flood": "Flooding detected",
+      "invite": "Invitation link"
+    },
+    "flood_timeout_message": "{{username}}, you've been timed out for 10 minutes due to excessive messaging."
+  }
+}

@@ -21,7 +21,7 @@ import {
   User
 } from 'discord.js'
 
-import { GuildSettings, HttpUtils, Logger, event } from '../../tools'
+import { GuildSettings, HttpUtils, Logger, Text, event } from '../../tools'
 
 const parseTicketDetails = async (
   channel: BaseGuildTextChannel
@@ -115,7 +115,9 @@ const closeTicket = async (channel: TextChannel, closedBy: User, reason?: string
 
     if (ticketDetails?.user != null) {
       const dmEmbed = embed
-        .setDescription(`**Server:** ${channel.guild.name}\n**Category:** ${ticketDetails.catName}`)
+        .setDescription(
+          `${Text.bold('Server:')} ${channel.guild.name}\n${Text.bold('Category:')} ${ticketDetails.catName}`
+        )
         .setThumbnail(channel.guild.iconURL())
 
       await ticketDetails.user.send({ embeds: [dmEmbed], components })
@@ -147,18 +149,22 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
           await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
           if (Boolean(guild?.members.me?.permissions.has(PermissionFlagsBits.ManageChannels))) {
-            return await interaction.followUp('Cannot create ticket channel, missing `Manage Channel` permission')
+            await interaction.followUp('Cannot create ticket channel, missing `Manage Channel` permission')
+            return
           }
 
           if (getExistingTicketChannel(guild, user.id) != null) {
-            return await interaction.followUp(`You already have an open ticket`)
+            await interaction.followUp(`You already have an open ticket`)
+            return
           }
 
           const { TICKET } = GuildSettings.get(guild)
 
           const existing = getTicketChannels(guild).size
-          if (existing != null && existing > TICKET.LIMIT)
-            return await interaction.followUp('There are too many open tickets. Try again later')
+          if (existing != null && existing > TICKET.LIMIT) {
+            await interaction.followUp('There are too many open tickets. Try again later')
+            return
+          }
 
           let catName: string | null = null
           let catPerms = [] as string[]
@@ -186,7 +192,10 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
                 if (error.message.includes('time')) return
               }) */
 
-            if (res == null) return await interaction.editReply({ content: 'Timed out. Try again', components: [] })
+            if (res == null) {
+              await interaction.editReply({ content: 'Timed out. Try again', components: [] })
+              return
+            }
 
             await interaction.editReply({ content: 'Processing', components: [] })
 
@@ -231,7 +240,7 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
               .setDescription(
                 `Hello ${user.toString()}
               Support will be with you shortly
-              ${catName != null ? `\n**Category:** ${catName}` : ''}
+              ${catName != null ? `\n${Text.bold('Category:')} ${catName}` : ''}
               `
               )
               .setFooter({ text: 'You may close your ticket anytime by clicking the button below' })
@@ -251,8 +260,8 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
               .setAuthor({ name: 'Ticket Created' })
               .setThumbnail(guild.iconURL())
               .setDescription(
-                `**Server:** ${guild.name}
-              ${catName != null ? `**Category:** ${catName}` : ''}
+                `${Text.bold('Server:')} ${guild.name}
+              ${catName != null ? `${Text.bold('Category:')} ${catName}` : ''}
               `
               )
 
@@ -265,7 +274,7 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
             await interaction.editReply(`Ticket created! 🔥`)
           } catch (error_) {
             Logger.error('handleTicketOpen', error_)
-            return await interaction.editReply('Failed to create ticket channel, an error occurred!')
+            await interaction.editReply('Failed to create ticket channel, an error occurred!')
           }
         }
 
@@ -278,9 +287,9 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
             const status = await closeTicket(channel, user)
 
             if (status === 'MISSING_PERMISSIONS') {
-              return await interaction.followUp('Cannot close the ticket, missing permissions.')
+              await interaction.followUp('Cannot close the ticket, missing permissions.')
             } else if (status === 'ERROR') {
-              return await interaction.followUp('Failed to close the ticket, an error occurred!')
+              await interaction.followUp('Failed to close the ticket, an error occurred!')
             }
           }
         }
@@ -288,6 +297,4 @@ export default event(Events.InteractionCreate, async (_, interaction) => {
         break
     }
   }
-
-  return interaction.guild
 })

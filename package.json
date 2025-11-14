@@ -5,7 +5,7 @@
   "main": "dist/app.js",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch --clear-screen src/app.ts",
-    "build": "swc src -d dist",
+    "build": "swc src -d dist && cp -r src/locales dist/",
     "start": "NODE_ENV=production node dist/src/app.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
@@ -14,19 +14,27 @@
     "postinstall": "prisma generate",
     "db:reset": "prisma db push --force-reset && bun run db:seed",
     "lint:typescript": "eslint \"**/*.ts\" --ignore-path \".gitignore\" && tsc --noemit",
-    "lint:prettier": "prettier \".\" --check --ignore-unknown '!**/*.yml' --ignore-path \".gitignore\""
+    "lint:prettier": "prettier \".\" --check --ignore-unknown '!**/*.yml' --ignore-path \".gitignore\"",
+    "control": "bash scripts/control_bot.sh"
   },
   "dependencies": {
     "@discordjs/voice": "^0.17.0",
     "@distube/ytdl-core": "latest",
     "@napi-rs/canvas": "^0.1.78",
     "@prisma/client": "^5.7.1",
+    "@types/i18next": "^13.0.0",
     "chalk": "^4.1.2",
+    "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "discord.js": "^14.12.1",
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
     "ffmpeg-static": "^4.4.1",
     "googleapis": "^159.0.0",
+    "helmet": "^7.1.0",
+    "i18next": "^25.6.2",
+    "i18next-fs-backend": "^2.6.0",
     "js-yaml": "^4.1.0",
     "play-dl": "^1.9.7",
     "soundcloud-downloader": "^0.2.3",
@@ -41,6 +49,8 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "20.4.6",
     "@walidoux/eslint-config": "1.0.7",

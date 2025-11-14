@@ -1,0 +1,28 @@
+{
+  "welcome": {
+    "returning_title": "Bienvenido de vuelta",
+    "new_title": "Bienvenido",
+    "returning_description": "me alegro de que hayas vuelto",
+    "new_description": "nos alegramos de tenerte",
+    "embed_title": "{{title}} {{guild}} 🎉 !",
+    "embed_description": "¡Eh {{user}}, {{description}} entre nosotros!",
+    "canvas_text": "{{title}}, {{username}} !"
+  },
+  "goodbye": {
+    "embed_title": "{{username}} ha dejado {{guild}}",
+    "embed_description": "¡Triste de verte marchar, {{user}}!",
+    "canvas_text": "¡Adiós, {{username}}!",
+    "member_count": "Ahora tenemos {{count}} miembros.",
+    "footer": "Se había unido {{time}}"
+  },
+  "automod": {
+    "log_embed_description": "{{user}} cometió una infracción en el canal {{channel}}",
+    "reasons": {
+      "caps": "Mayúsculas excesivas",
+      "censored": "Palabras inapropiadas",
+      "flood": "Inundación detectada",
+      "invite": "Enlace de invitación"
+    },
+    "flood_timeout_message": "{{username}}, has sido silenciado por 10 minutos debido al exceso de mensajes."
+  }
+}

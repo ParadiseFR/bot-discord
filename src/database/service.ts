@@ -1,4 +1,4 @@
-import type { Guild, User, Ticket, Message } from '@prisma/client'
+import type { Guild, Ticket } from '@prisma/client'
 
 import { prisma } from './prisma'
 
@@ -23,21 +23,8 @@ export class DatabaseService {
     })
   }
 
-  // User operations
-  static async getOrCreateUser(discordId: string, username: string, email?: string): Promise<User> {
-    return await prisma.user.upsert({
-      where: { discordId },
-      update: { username, email },
-      create: {
-        discordId,
-        username,
-        email
-      }
-    })
-  }
-
   // Ticket operations
-  static async createTicket(
+  /* static async createTicket(
     discordId: string,
     userDiscordId: string,
     title: string,
@@ -56,9 +43,9 @@ export class DatabaseService {
         user: true
       }
     })
-  }
+  } */
 
-  static async getTicketsByUser(userDiscordId: string): Promise<Ticket[]> {
+  /* static async getTicketsByUser(userDiscordId: string): Promise<Ticket[]> {
     const user = await prisma.user.findUnique({
       where: { discordId: userDiscordId }
     })
@@ -72,7 +59,7 @@ export class DatabaseService {
       },
       orderBy: { createdAt: 'desc' }
     })
-  }
+  } */
 
   static async updateTicketStatus(
     discordId: string,
@@ -88,7 +75,7 @@ export class DatabaseService {
   }
 
   // Message logging
-  static async logMessage(
+  /* static async logMessage(
     discordId: string,
     userDiscordId: string,
     content: string,
@@ -106,9 +93,9 @@ export class DatabaseService {
         guildId
       }
     })
-  }
+  } */
 
-  static async getUserMessageCount(userDiscordId: string, guildId?: string): Promise<number> {
+  /* static async getUserMessageCount(userDiscordId: string, guildId?: string): Promise<number> {
     const user = await prisma.user.findUnique({
       where: { discordId: userDiscordId }
     })
@@ -119,7 +106,7 @@ export class DatabaseService {
     if (guildId) where.guildId = guildId
 
     return await prisma.message.count({ where })
-  }
+  } */
 
   // Utility methods
   static async isGuildActive(discordId: string): Promise<boolean> {
@@ -131,7 +118,7 @@ export class DatabaseService {
     return guild?.isActive ?? false
   }
 
-  static async closeInactiveTickets(hoursOld: number = 24): Promise<number> {
+  static async closeInactiveTickets(hoursOld = 24): Promise<number> {
     const cutoffDate = new Date(Date.now() - hoursOld * 60 * 60 * 1000)
 
     const result = await prisma.ticket.updateMany({

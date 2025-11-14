@@ -1,0 +1,8 @@
+{
+  "automod": {
+    "caps": "Mayúsculas excesivas",
+    "censored": "Palabras inapropiadas",
+    "flood": "Inundación detectada",
+    "invite": "Enlace de invitación"
+  }
+}
