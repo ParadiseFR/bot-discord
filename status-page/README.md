@@ -63,3 +63,4 @@ To set up a custom domain:
 2. Update the GitHub repository settings to use GitHub Pages with your custom domain
 3. Update the CORS settings in the bot's API to allow requests from your domain# Test
 # Test 2
+# Test 3
