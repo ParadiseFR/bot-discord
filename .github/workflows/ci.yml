@@ -23,5 +23,8 @@ jobs:
       - name: Run lint check
         run: bun run lint:typescript
 
+      - name: Run prettier check
+        run: bun run lint:prettier
+
       - name: Run build
         run: bun run build
