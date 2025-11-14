@@ -1,4 +1,4 @@
-import { createResource, onMount } from 'solid-js'
+import { createResource, onMount, createSignal } from 'solid-js'
 
 interface BotStats {
   status: 'online' | 'offline'
@@ -10,7 +10,7 @@ interface BotStats {
   readyAt?: string
 }
 
-const API_URL = 'http://localhost:3000' // Replace with your bot's API URL
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 async function fetchStats(): Promise<BotStats> {
   const response = await fetch(`${API_URL}/stats`)

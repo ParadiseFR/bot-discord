@@ -1,8 +1,39 @@
 import express, { Request, Response } from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
 import { BOT_INSTANCE } from './app'
 
 const app = express()
 const PORT = process.env.API_PORT || 3000
+
+// Security middleware
+app.use(
+  helmet({
+    contentSecurityPolicy: false // Disable CSP for API
+  })
+)
+
+// CORS configuration
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || '*', // In production, set to your GitHub Pages domain
+    methods: ['GET'],
+    credentials: false
+  })
+)
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false
+})
+
+app.use('/stats', limiter)
+app.use('/health', limiter)
 
 app.use(express.json())
 

@@ -8,6 +8,9 @@ on:
     branches: [ main ]
     paths: [ 'status-page/**' ]
 
+env:
+  VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
