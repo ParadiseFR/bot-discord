@@ -64,3 +64,4 @@ To set up a custom domain:
 3. Update the CORS settings in the bot's API to allow requests from your domain# Test
 # Test 2
 # Test 3
+# Test 4
