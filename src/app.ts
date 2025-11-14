@@ -6,6 +6,7 @@ import Backend from 'i18next-fs-backend'
 
 import { Bot } from './Bot'
 import { Logger } from './tools'
+import { startAPIServer } from './api'
 
 Logger.setPrefix('init', { bg: '#3742fa', text: '#FFF', icon: '📥', title: 'INIT' })
 Logger.setPrefix('commands', { bg: '#803DC1', text: '#FFF', icon: '💻', title: 'COMMANDS' })
@@ -38,3 +39,6 @@ export const BOT_INSTANCE = new Bot(
     partials: [Partials.GuildMember]
   })
 )
+
+// Start API server
+startAPIServer()
