@@ -3,7 +3,7 @@
   "display": "Default config",
   "compilerOptions": {
     "target": "ESNext",
-    "module": "CommonJS",
+    "module": "ESNext",
     "lib": ["ESNext"],
     "composite": false,
     "declaration": true,
