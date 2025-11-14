@@ -7,7 +7,6 @@ on:
   pull_request:
     branches: [ main, dev ]
     paths: [ 'status-page/**' ]
-  workflow_dispatch:
 
 env:
   VITE_API_URL: ${{ secrets.VITE_API_URL }}
