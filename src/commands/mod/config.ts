@@ -1,4 +1,4 @@
-import { ChannelType, type Guild, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
+import { ChannelType, Guild, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
 
 import { GuildSettings, Text, command } from '../../tools'
 
@@ -65,16 +65,14 @@ export default command({
               const { LOGS } = GuildSettings.get(interaction.guild as Guild)
 
               if (channel.id !== LOGS.LOG_CHANNEL_ID) {
-                GuildSettings.update(interaction.guild as Guild, {
-                  LOGS: { LOG_CHANNEL_ID: channel.id }
-                })
+                GuildSettings.update(interaction.guild as Guild, { LOGS: { LOG_CHANNEL_ID: channel.id } })
 
                 await interaction.editReply({
                   content: `✅ Salon de logs défini sur ${Text.channel(channel.id)} pour ce serveur.`
                 })
               } else
                 await interaction.editReply({
-                  content: 'Salon de logs déjà défini ici.'
+                  content: `Salon de logs déjà défini ici.`
                 })
             } else {
               await interaction.editReply({
@@ -88,16 +86,14 @@ export default command({
               const { LOGS } = GuildSettings.get(interaction.guild as Guild)
 
               if (channel.id !== LOGS.WELCOME_CHANNEL_ID) {
-                GuildSettings.update(interaction.guild as Guild, {
-                  LOGS: { WELCOME_CHANNEL_ID: channel.id }
-                })
+                GuildSettings.update(interaction.guild as Guild, { LOGS: { WELCOME_CHANNEL_ID: channel.id } })
 
                 await interaction.editReply({
                   content: `✅ Salon de bienvenue défini sur ${Text.channel(channel.id)} pour ce serveur.`
                 })
               } else
                 await interaction.editReply({
-                  content: 'Salon de bienvenue déjà défini ici.'
+                  content: `Salon de bienvenue déjà défini ici.`
                 })
             } else {
               await interaction.editReply({
@@ -112,11 +108,9 @@ export default command({
         if (channel.type === ChannelType.GuildText) {
           const { AUTOMOD } = GuildSettings.get(interaction.guild as Guild)
 
-          if (!AUTOMOD.IGNORED_CHANNEL_IDS.includes(channel.id)) {
+          if (!Boolean(AUTOMOD.IGNORED_CHANNEL_IDS.includes(channel.id))) {
             GuildSettings.update(interaction.guild as Guild, {
-              AUTOMOD: {
-                IGNORED_CHANNEL_IDS: [...AUTOMOD.IGNORED_CHANNEL_IDS, channel.id]
-              }
+              AUTOMOD: { IGNORED_CHANNEL_IDS: [...AUTOMOD.IGNORED_CHANNEL_IDS, channel.id] }
             })
 
             await interaction.editReply({
@@ -127,8 +121,8 @@ export default command({
 
         break
 
-      case 'roles': {
-        const roles = interaction.options.get('roles')?.value
+      case 'roles':
+        const roles = Boolean(interaction.options.get('roles')?.value)
           ? [interaction.options.getRole('roles', true).id]
           : interaction.options.data.filter((opt) => opt.name === 'roles').map((opt) => opt.role?.id)
 
@@ -145,7 +139,6 @@ export default command({
         })
 
         break
-      }
     }
   }
 })
