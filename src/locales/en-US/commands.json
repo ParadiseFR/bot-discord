@@ -1,0 +1,269 @@
+{
+  "categories": {
+    "misc": "Miscellaneous",
+    "mod": "Moderation",
+    "music": "Music",
+    "ticket": "Ticket"
+  },
+  "salon": {
+    "name": "channel",
+    "description": "Manage or retrieve information about a specific channel.",
+    "options": {
+      "salon": {
+        "name": "channel",
+        "description": "The channel to interact with."
+      }
+    },
+    "responses": {
+      "success": "✅ Log channel set to {{channel}} for this server."
+    }
+  },
+  "membercount": {
+    "name": "membercount",
+    "description": "Update the members count channel manually.",
+    "subcommands": {
+      "update": {
+        "name": "update",
+        "description": "Update the member count in the configured channel."
+      },
+      "set": {
+        "name": "set",
+        "description": "Set the voice channel for member count updates.",
+        "options": {
+          "channel": {
+            "name": "channel",
+            "description": "The voice channel to use for member count."
+          }
+        }
+      }
+    },
+    "responses": {
+      "updated": "✅ Member count has been updated successfully!",
+      "up_to_date": "ℹ️ Member count is already up to date. Nothing to change.",
+      "error": "❌ Failed to update member count. Please try again.",
+      "channel_set": "✅ Member counter channel set to {{channel}}.",
+      "invalid_channel": "❌ Please select a valid voice channel."
+    }
+  },
+  "kick": {
+    "name": "kick",
+    "description": "Kick a member from the server",
+    "responses": {
+      "success": "✅ Kicked {{count}} member(s) who joined on {{date}} (UTC)."
+    }
+  },
+  "purge": {
+    "name": "purge",
+    "description": "Bulk delete messages in the current channel",
+    "options": {
+      "amount": {
+        "name": "amount",
+        "description": "Number of messages to delete"
+      },
+      "startid": {
+        "name": "startid",
+        "description": "Starting message ID (optional)"
+      }
+    },
+    "responses": {
+      "start_message_not_found": "Starting message not found.",
+      "no_messages": "No messages to delete.",
+      "no_recent_messages": "No recent messages (less than 14 days) to delete.",
+      "success": "{{count}} message(s) deleted successfully.",
+      "unsupported_channel": "Bulk delete is not supported in this channel type.",
+      "error": "An error occurred while deleting messages."
+    }
+  },
+  "mod_settings": {
+    "name": "mod_settings",
+    "description": "Configure moderation settings",
+    "subcommand_groups": {
+      "logger": {
+        "name": "logger",
+        "description": "Configure the logger",
+        "subcommands": {
+          "message": {
+            "name": "message",
+            "description": "Configure the channel for logger messages",
+            "options": {
+              "channel": {
+                "name": "channel",
+                "description": "The channel where logger messages will be sent"
+              }
+            }
+          },
+          "welcome": {
+            "name": "welcome",
+            "description": "Configure the welcome channel",
+            "options": {
+              "channel": {
+                "name": "channel",
+                "description": "The channel where welcome messages will be sent"
+              }
+            }
+          }
+        }
+      },
+      "channels": {
+        "name": "channels",
+        "description": "Configure channels to ignore",
+        "options": {
+          "channel": {
+            "name": "channel",
+            "description": "The channel to ignore"
+          }
+        }
+      },
+      "roles": {
+        "name": "roles",
+        "description": "Configure roles to ignore",
+        "options": {
+          "role": {
+            "name": "role",
+            "description": "The role to ignore"
+          }
+        }
+      }
+    },
+    "responses": {
+      "log_channel_set": "✅ Log channel set to {{channel}} for this server.",
+      "log_channel_already_set": "Log channel already set here.",
+      "invalid_text_channel": "Error: Please select a valid text channel.",
+      "welcome_channel_set": "✅ Welcome channel set to {{channel}} for this server.",
+      "welcome_channel_already_set": "Welcome channel already set here.",
+      "channel_ignored": "✅ Channel {{channel}} ignored for this server.",
+      "roles_ignored": "✅ Roles {{roles}} ignored for this server."
+    }
+  },
+  "play": {
+    "name": "play",
+    "description": "Play music from YouTube/Spotify",
+    "options": {
+      "url": {
+        "name": "url",
+        "description": "YouTube/Spotify URL"
+      }
+    },
+    "responses": {
+      "not_in_voice": "You must first be in a music voice channel 🎶",
+      "wrong_channel": "You must be in the same channel as {{bot}}",
+      "loading": "⏳ Loading...",
+      "playlist_link": "🔗 Link is playlist",
+      "no_results": "No results found for <{{url}}>",
+      "invalid_url": "Invalid URL for <{{url}}>",
+      "error": "Command error lol",
+      "added_to_queue": "✅ {{title}} has been added to the queue by {{user}}"
+    }
+  },
+  "setup": {
+    "name": "setup",
+    "description": "Configure the ticket system",
+    "options": {
+      "salon": {
+        "name": "channel",
+        "description": "Channel to send the ticket message"
+      }
+    },
+    "responses": {
+      "setup_prompt": "Please click the button below to setup ticket message",
+      "no_response": "No response received, cancelling setup",
+      "setting_up": "Setting up ticket message ...",
+      "done": "Done! Ticket Message Created"
+    },
+    "modal": {
+      "title": "Ticket Setup",
+      "fields": {
+        "title": {
+          "label": "Embed Title"
+        },
+        "description": {
+          "label": "Embed Description"
+        },
+        "footer": {
+          "label": "Embed Footer"
+        }
+      }
+    },
+    "embed": {
+      "default_title": "Support Ticket",
+      "default_description": "Please use the button below to create a ticket",
+      "default_footer": "You can only have 1 open ticket at a time!"
+    },
+    "button": {
+      "label": "Open a ticket"
+    }
+  },
+  "ticket_settings": {
+    "name": "ticket_settings",
+    "description": "Configure the ticket system",
+    "subcommand_groups": {
+      "categories": {
+        "name": "categories",
+        "description": "Configure ticket categories",
+        "subcommands": {
+          "add": {
+            "name": "add",
+            "description": "Add a ticket category",
+            "options": {
+              "name": {
+                "name": "name",
+                "description": "Category name"
+              },
+              "roles": {
+                "name": "roles",
+                "description": "Category roles (multiple selection)"
+              }
+            }
+          },
+          "remove": {
+            "name": "remove",
+            "description": "Remove a ticket category",
+            "options": {
+              "name": {
+                "name": "name",
+                "description": "Category name"
+              }
+            }
+          },
+          "list": {
+            "name": "list",
+            "description": "List ticket categories"
+          }
+        }
+      }
+    },
+    "subcommands": {
+      "limit": {
+        "name": "limit",
+        "description": "Set the ticket limit per user",
+        "options": {
+          "limit": {
+            "name": "limit",
+            "description": "Ticket limit per user"
+          }
+        }
+      }
+    },
+    "responses": {
+      "category_exists": "Error: This ticket category already exists.",
+      "category_added": "Category \"{{name}}\" added with {{count}} role(s).",
+      "category_removed": "Category \"{{name}}\" removed.",
+      "category_not_found": "Error: This ticket category does not exist.",
+      "categories_list": "Ticket categories: {{categories}}",
+      "limit_set": "✅ Ticket limit per user set to {{limit}}."
+    }
+  },
+  "language": {
+    "name": "language",
+    "description": "Set the language for this server.",
+    "options": {
+      "locale": {
+        "name": "locale",
+        "description": "The language to set."
+      }
+    },
+    "responses": {
+      "success": "✅ Language set to {{locale}} for this server."
+    }
+  }
+}

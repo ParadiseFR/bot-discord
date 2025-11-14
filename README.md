@@ -9,6 +9,7 @@ Further docs can be found under [Wiki](https://github.com/ParadiseFR/bot-discord
 - 🎵 Music (YouTube/SoundCloud) with queues
 - 📊 Member Counter Channel
 - 👋 Custom welcome/goodbye embed messages
+- 🌎 Multi-lingual, supports currently 3 languages
 
 ## 🚀 Setup
 
@@ -22,5 +23,4 @@ cp .env.example .env
 
 - [ ] Disable/enable team flow announcement
 - [ ] Add giveaways 🎁
-- [ ] Add i18n 🌎
 - [ ] Solve redundunt issues Error: getaddrinfo EAI_AGAIN discord.com + AggregateError
