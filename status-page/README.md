@@ -62,3 +62,4 @@ To set up a custom domain:
 1. Add a `CNAME` file to the `status-page/public/` directory with your domain
 2. Update the GitHub repository settings to use GitHub Pages with your custom domain
 3. Update the CORS settings in the bot's API to allow requests from your domain# Test
+# Test 2
