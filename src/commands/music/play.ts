@@ -1,5 +1,5 @@
-import { GuildMember, TextChannel, SlashCommandBuilder, MessageFlags } from 'discord.js'
-import { DiscordGatewayAdapterCreator, joinVoiceChannel } from '@discordjs/voice'
+import { type GuildMember, type TextChannel, SlashCommandBuilder, MessageFlags } from 'discord.js'
+import { type DiscordGatewayAdapterCreator, joinVoiceChannel } from '@discordjs/voice'
 
 import { command } from '../../tools/Command'
 import { Song } from '../../tools/Song'
@@ -51,15 +51,19 @@ export default command({
     }
 
     let song: Song
+    interface IError {
+      name: string
+    }
 
     try {
       song = await Song.from(url as string, url as string)
-    } catch (error: any) {
-      if (error.name === 'NoResults')
+    } catch (error: unknown) {
+      const err = error as IError
+      if (err.name === 'NoResults')
         return await interaction
           .reply({ content: `Aucun résultat trouvé pour <${url}>`, flags: MessageFlags.Ephemeral })
           .catch(Logger.error)
-      if (error.name === 'InvalidURL')
+      if (err.name === 'InvalidURL')
         return await interaction
           .reply({ content: `URL Invalide pour <${url}>`, flags: MessageFlags.Ephemeral })
           .catch(Logger.error)

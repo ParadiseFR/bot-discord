@@ -1,4 +1,4 @@
-import { Guild, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
+import { type Guild, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
 
 import { GuildSettings, command } from '../../tools'
 

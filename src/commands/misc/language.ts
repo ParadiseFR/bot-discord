@@ -6,16 +6,17 @@ const meta = new SlashCommandBuilder()
   .setName('language')
   .setDescription('Set the language for this server.')
   .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-  .addStringOption((option) =>
-    option
-      .setName('locale')
-      .setDescription('The language to set.')
-      .setRequired(true)
-      .addChoices({ name: 'English', value: 'en-US' }, { name: 'Español', value: 'es-ES' })
-  )
+
+meta.addStringOption((option) =>
+  option
+    .setName('locale')
+    .setDescription('The language to set.')
+    .setRequired(true)
+    .addChoices({ name: 'English', value: 'en-US' }, { name: 'Español', value: 'es-ES' })
+)
 
 export default command({
-  meta: meta as any,
+  meta,
   cooldown: 5,
   execute: async ({ interaction }) => {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })

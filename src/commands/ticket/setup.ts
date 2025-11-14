@@ -9,7 +9,7 @@ import {
   ComponentType,
   ModalBuilder,
   TextInputBuilder,
-  MessageActionRowComponentBuilder,
+  type MessageActionRowComponentBuilder,
   TextInputStyle
 } from 'discord.js'
 
@@ -50,7 +50,10 @@ export default command({
       })
 
       if (btnInteract == null) {
-        return await sentMessage.edit({ content: 'No response received, cancelling setup', components: [] })
+        return await sentMessage.edit({
+          content: 'No response received, cancelling setup',
+          components: []
+        })
       }
 
       await btnInteract.showModal(
@@ -91,7 +94,10 @@ export default command({
       })
 
       if (modal == null) {
-        return await sentMessage.edit({ content: 'No response received, cancelling setup', components: [] })
+        return await sentMessage.edit({
+          content: 'No response received, cancelling setup',
+          components: []
+        })
       }
 
       await modal.reply('Setting up ticket message ...')
