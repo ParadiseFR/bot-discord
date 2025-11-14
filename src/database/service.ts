@@ -118,7 +118,7 @@ export class DatabaseService {
     return guild?.isActive ?? false
   }
 
-  static async closeInactiveTickets(hoursOld: number = 24): Promise<number> {
+  static async closeInactiveTickets(hoursOld = 24): Promise<number> {
     const cutoffDate = new Date(Date.now() - hoursOld * 60 * 60 * 1000)
 
     const result = await prisma.ticket.updateMany({

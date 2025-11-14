@@ -15,7 +15,6 @@
     "db:reset": "prisma db push --force-reset && bun run db:seed",
     "lint:typescript": "eslint \"**/*.ts\" --ignore-path \".gitignore\" && tsc --noemit",
     "lint:prettier": "prettier \".\" --check --ignore-unknown '!**/*.yml' --ignore-path \".gitignore\"",
-    "lint:biome": "biome check .",
     "control": "bash scripts/control_bot.sh"
   },
   "dependencies": {
@@ -46,7 +45,6 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "20.4.6",
     "@walidoux/eslint-config": "1.0.7",

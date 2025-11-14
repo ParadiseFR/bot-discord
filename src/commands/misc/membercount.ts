@@ -1,4 +1,4 @@
-import { ChannelType, Guild, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
+import { ChannelType, type Guild, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
 
 import { GuildSettings, Logger, command, tWithLocale } from '../../tools'
 import { BOT_INSTANCE } from '../../app'
@@ -48,9 +48,13 @@ export default command({
       const channel = interaction.options.getChannel('channel', true)
 
       if (channel.type === ChannelType.GuildVoice) {
-        GuildSettings.update(interaction.guild as Guild, { MEMBER_COUNTER_CHANNEL_ID: channel.id })
+        GuildSettings.update(interaction.guild as Guild, {
+          MEMBER_COUNTER_CHANNEL_ID: channel.id
+        })
         await interaction.editReply(
-          tWithLocale(interaction, 'membercount.responses.channel_set', { channel: channel.name })
+          tWithLocale(interaction, 'membercount.responses.channel_set', {
+            channel: channel.name
+          })
         )
       } else {
         await interaction.editReply(tWithLocale(interaction, 'membercount.responses.invalid_channel'))
