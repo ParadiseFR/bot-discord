@@ -2,10 +2,10 @@ name: Deploy Status Page
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
     paths: [ 'status-page/**' ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, dev ]
     paths: [ 'status-page/**' ]
   workflow_dispatch:
 
