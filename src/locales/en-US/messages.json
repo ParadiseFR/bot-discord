@@ -1,8 +1,0 @@
-{
-  "automod": {
-    "caps": "Excessive caps",
-    "censored": "Inappropriate words",
-    "flood": "Flooding detected",
-    "invite": "Invitation link"
-  }
-}

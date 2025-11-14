@@ -1,4 +1,4 @@
-import { type Guild, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
 
 import { command } from '../../tools/Command'
 
@@ -17,8 +17,8 @@ export default command({
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral })
 
-    const members = await (interaction.guild as Guild).members.fetch()
-    const toKick = members.filter((m) => m.joinedAt != null && m.joinedAt >= start && m.joinedAt <= end)
+    const members = await interaction.guild!.members.fetch()
+    const toKick = members.filter((m) => m.joinedAt! && m.joinedAt >= start && m.joinedAt <= end)
 
     /* await interaction.editReply(
       toKick.size === 0
