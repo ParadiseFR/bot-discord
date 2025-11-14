@@ -1,7 +1,7 @@
-import { createResource, onMount, createSignal } from 'solid-js'
+import { JSX, Show, createResource, onMount } from 'solid-js'
 
 interface BotStats {
-  status: 'online' | 'offline'
+  status: 'online' | 'offline' | 'loading'
   uptime: number
   guilds: number
   users: number
@@ -10,17 +10,15 @@ interface BotStats {
   readyAt?: string
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
-async function fetchStats(): Promise<BotStats> {
+const fetchStats = async (): Promise<BotStats> => {
   const response = await fetch(`${API_URL}/stats`)
-  if (!response.ok) {
-    throw new Error('Failed to fetch stats')
-  }
-  return response.json()
+  if (!Boolean(response.ok)) throw new Error('Failed to fetch stats')
+  else return response.json()
 }
 
-function formatUptime(ms: number): string {
+const formatUptime = (ms: number): string => {
   const seconds = Math.floor(ms / 1000)
   const minutes = Math.floor(seconds / 60)
   const hours = Math.floor(minutes / 60)
@@ -32,76 +30,73 @@ function formatUptime(ms: number): string {
   return `${seconds}s`
 }
 
-function formatNumber(num: number): string {
-  return num.toLocaleString()
-}
-
-export default function App() {
+export default function App(): JSX.Element {
   const [stats, { refetch }] = createResource(fetchStats)
 
   onMount(() => {
     // Poll every 30 seconds
     const interval = setInterval(() => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       refetch()
-    }, 30000)
+    }, 30_000)
 
     return () => clearInterval(interval)
   })
 
-  const statusClass = () => {
+  const statusClass = (): BotStats['status'] => {
     if (stats.loading) return 'loading'
-    if (stats.error) return 'offline'
+    if (Boolean(stats.error)) return 'offline'
     return stats()?.status === 'online' ? 'online' : 'offline'
   }
 
-  const statusText = () => {
+  const statusText = (): string => {
     if (stats.loading) return 'Loading...'
-    if (stats.error) return 'Offline'
+    if (Boolean(stats.error)) return 'Offline'
     return stats()?.status === 'online' ? 'Online' : 'Offline'
   }
 
   return (
-    <div class="container">
+    <div class='container'>
       <h1>Discord Bot Status</h1>
 
-      <div class="status">
+      <div class='status'>
         <div class={`status-dot ${statusClass()}`}></div>
         <span>Bot is {statusText()}</span>
       </div>
 
-      {stats.error && (
-        <div class="error">
+      <Show when={stats.error}>
+        <div class='error'>
           <p>Unable to connect to bot API. The bot may be offline.</p>
           <p>Error: {stats.error.message}</p>
         </div>
-      )}
+      </Show>
 
-      {stats() && (
+      <Show when={stats()}>
         <>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-value">{formatUptime(stats()!.uptime)}</div>
-              <div class="stat-label">Uptime</div>
+          <div class='stats-grid'>
+            <div class='stat-card'>
+              <div class='stat-value'>{formatUptime(stats()?.uptime ?? 0)}</div>
+              <div class='stat-label'>Uptime</div>
             </div>
-            <div class="stat-card">
-              <div class="stat-value">{formatNumber(stats()!.guilds)}</div>
-              <div class="stat-label">Servers</div>
+            <div class='stat-card'>
+              <div class='stat-value'>{formatUptime(stats()?.guilds ?? 0)}</div>
+              <div class='stat-label'>Servers</div>
             </div>
-            <div class="stat-card">
-              <div class="stat-value">{formatNumber(stats()!.users)}</div>
-              <div class="stat-label">Users</div>
+            <div class='stat-card'>
+              <div class='stat-value'>{formatUptime(stats()?.users ?? 0)}</div>
+              <div class='stat-label'>Users</div>
             </div>
-            <div class="stat-card">
-              <div class="stat-value">{formatNumber(stats()!.channels)}</div>
-              <div class="stat-label">Channels</div>
+            <div class='stat-card'>
+              <div class='stat-value'>{formatUptime(stats()?.channels ?? 0)}</div>
+              <div class='stat-label'>Channels</div>
             </div>
           </div>
 
-          <p style="text-align: center; color: #666; margin-top: 20px;">
-            Last updated: {new Date(stats()!.lastUpdate).toLocaleString()}
+          <p style='text-align: center; color: #666; margin-top: 20px;'>
+            Last updated: {new Date(stats()?.lastUpdate ?? '').toLocaleString()}
           </p>
         </>
-      )}
+      </Show>
     </div>
   )
 }
